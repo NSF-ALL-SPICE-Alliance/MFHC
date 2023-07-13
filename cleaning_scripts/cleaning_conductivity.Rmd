@@ -144,3 +144,10 @@ conductivity_joined <- conductivity_joined %>%
                values_to = "value")
 ```
 
+
+Write csv into cleaned_conductivity folder
+
+```{r}
+write_csv(conductivity_joined, here("cleaned_data/cleaned_conductivity/conductivity_joined.csv"))
+```
+
