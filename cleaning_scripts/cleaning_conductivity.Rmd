@@ -1,0 +1,146 @@
+---
+title: "Conductivity Cleaning"
+author: "Connor Flynn"
+date: "7/13/2023"
+output: html_document
+---
+
+Load in packages
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+
+# Read in Conductivity Data - 3 datsets
+
+```{r Read in Kalauhaihai FebApr2023 Data, warning=FALSE}
+data_conductivity_FebApr2023_Kalauhaihai <- read_csv(here("raw_data/raw_conductivity/data_conductivity_FebApr2023_Kalauhaihai_21415543.csv"), skip = 1)
+```
+
+```{r, warning=FALSE}
+data_conductivity_FebApr2023_Kanewai <- read_csv(here("raw_data/raw_conductivity/data_conductivity_FebApr2023_Kanewai_21415544.csv"), skip = 1) # doesn't have a low range measurement
+```
+
+```{r message=FALSE, warning=FALSE}
+data_conductivity_OctNov2022_Kalauhaihai <- read_tsv(here("raw_data/raw_conductivity/data_conductivity_OctNov2022_Kalauhaihai_21415543.txt"))
+```
+
+
+
+# Clean Names
+
+
+```{r}
+data_conductivity_FebApr2023_Kalauhaihai <- data_conductivity_FebApr2023_Kalauhaihai %>% 
+  clean_names()
+```
+
+```{r}
+data_conductivity_FebApr2023_Kanewai <- data_conductivity_FebApr2023_Kanewai %>% 
+  clean_names()
+```
+
+```{r}
+data_conductivity_OctNov2022_Kalauhaihai <- data_conductivity_OctNov2022_Kalauhaihai %>% 
+  clean_names()
+```
+
+# Merge date and time columns for data_conductivity_OctNov2022_Kalauhaihai
+
+```{r}
+data_conductivity_OctNov2022_Kalauhaihai <- data_conductivity_OctNov2022_Kalauhaihai %>%
+  unite(date_time, date, time, sep = " ")
+
+data_conductivity_OctNov2022_Kalauhaihai$date_time <- mdy_hms(data_conductivity_OctNov2022_Kalauhaihai$date_time)
+```
+
+
+
+# Rename Column Names 
+
+```{r}
+colnames(data_conductivity_FebApr2023_Kalauhaihai)[which(names(data_conductivity_FebApr2023_Kalauhaihai) == "low_range_m_s_cm_lgr_s_n_21415543_sen_s_n_21415543")] <- "low_range_microSiemens"
+
+colnames(data_conductivity_FebApr2023_Kalauhaihai)[which(names(data_conductivity_FebApr2023_Kalauhaihai) == "high_range_m_s_cm_lgr_s_n_21415543_sen_s_n_21415543")] <- "high_range_microSiemens"
+
+colnames(data_conductivity_FebApr2023_Kalauhaihai)[which(names(data_conductivity_FebApr2023_Kalauhaihai) == "temp_c_lgr_s_n_21415543_sen_s_n_21415543")] <- "temp_celsius"
+
+colnames(data_conductivity_FebApr2023_Kalauhaihai)[which(names(data_conductivity_FebApr2023_Kalauhaihai) == "date_time_gmt_10_00")] <- "date_time"
+
+data_conductivity_FebApr2023_Kalauhaihai <- data_conductivity_FebApr2023_Kalauhaihai %>% 
+  select(date_time, low_range_microSiemens, high_range_microSiemens, temp_celsius)
+```
+
+
+```{r}
+colnames(data_conductivity_FebApr2023_Kanewai)[which(names(data_conductivity_FebApr2023_Kanewai) == "high_range_m_s_cm_lgr_s_n_21415544_sen_s_n_21415544")] <- "high_range_microSiemens"
+
+colnames(data_conductivity_FebApr2023_Kanewai)[which(names(data_conductivity_FebApr2023_Kanewai) == "temp_c_lgr_s_n_21415544_sen_s_n_21415544")] <- "temp_celsius"
+
+colnames(data_conductivity_FebApr2023_Kanewai)[which(names(data_conductivity_FebApr2023_Kanewai) == "date_time_gmt_10_00")] <- "date_time"
+
+data_conductivity_FebApr2023_Kanewai <- data_conductivity_FebApr2023_Kanewai %>% 
+  select(date_time, high_range_microSiemens, temp_celsius)
+```
+
+```{r}
+colnames(data_conductivity_OctNov2022_Kalauhaihai)[which(names(data_conductivity_OctNov2022_Kalauhaihai) == "low_range_m_s_cm_c_1_3")] <- "low_range_microSiemens"
+
+colnames(data_conductivity_OctNov2022_Kalauhaihai)[which(names(data_conductivity_OctNov2022_Kalauhaihai) == "high_range_m_s_cm_c_1_3")] <- "high_range_microSiemens"
+
+colnames(data_conductivity_OctNov2022_Kalauhaihai)[which(names(data_conductivity_OctNov2022_Kalauhaihai) == "temp_c_c_3")] <- "temp_celsius"
+
+
+data_conductivity_OctNov2022_Kalauhaihai <- data_conductivity_OctNov2022_Kalauhaihai %>% 
+  select(date_time, low_range_microSiemens, high_range_microSiemens, temp_celsius)
+```
+
+# Make data_conductivity_FebApr2023_Kanewai and data_conductivity_FebApr2023_Kalauhaihai UTC class
+
+```{r}
+data_conductivity_FebApr2023_Kanewai$date_time <- mdy_hms(data_conductivity_FebApr2023_Kanewai$date_time)
+```
+
+
+```{r}
+data_conductivity_FebApr2023_Kalauhaihai$date_time <- mdy_hms(data_conductivity_FebApr2023_Kalauhaihai$date_time)
+```
+
+# Format data to be joined with other variables and locations
+
+Add location columns
+
+```{r}
+data_conductivity_FebApr2023_Kalauhaihai <- data_conductivity_FebApr2023_Kalauhaihai %>%
+  mutate(site = "Kalauhaihai")
+
+data_conductivity_FebApr2023_Kanewai <- data_conductivity_FebApr2023_Kanewai %>%
+  mutate(site = "Kanewai")
+
+data_conductivity_OctNov2022_Kalauhaihai <- data_conductivity_OctNov2022_Kalauhaihai %>%
+  mutate(site = "Kalauhaihai")
+```
+
+# Maybe Trimming
+
+# Join Conductivity Data
+
+```{r}
+conductivity_joined <- bind_rows(data_conductivity_FebApr2023_Kalauhaihai,
+                                 data_conductivity_FebApr2023_Kanewai,
+                                 data_conductivity_OctNov2022_Kalauhaihai)
+```
+
+# Format joined data to be joined with other variables and locations
+
+```{r}
+conductivity_joined <- conductivity_joined %>% 
+  pivot_longer(low_range_microSiemens:temp_celsius, 
+               names_to = "variable",
+               values_to = "value")
+```
+
