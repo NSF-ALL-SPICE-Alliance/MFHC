@@ -140,3 +140,20 @@ data_oxygen_AprMay2023_Kalauhaihai <- data_oxygen_AprMay2023_Kalauhaihai %>%
 oxygen_joined <- bind_rows(data_oxygen_OctNov2022_Kalauhaihai, data_oxygen_FebApr2023_Kalauhaihai, data_oxygen_FebApr2023_KanewaiSpringRock, data_oxygen_AprMay2023_Kalauhaihai)
 
 ```
+
+# Format joined data to be joined with other variables and locations
+
+```{r}
+oxygen_joined <- oxygen_joined %>% 
+  pivot_longer(dissolved_oxygen_mg_l:temp_celsius, 
+               names_to = "variable",
+               values_to = "value")
+```
+
+
+# Write csv into cleaned_conductivity folder
+
+```{r}
+write_csv(oxygen_joined, here("cleaned_data/cleaned_oxygen/oxygen_joined.csv"))
+```
+
