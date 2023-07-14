@@ -112,7 +112,7 @@ data_conductivity_FebApr2023_Kalauhaihai$date_time <- mdy_hms(data_conductivity_
 
 # Format data to be joined with other variables and locations
 
-Add location columns
+# Add location columns
 
 ```{r}
 data_conductivity_FebApr2023_Kalauhaihai <- data_conductivity_FebApr2023_Kalauhaihai %>%
