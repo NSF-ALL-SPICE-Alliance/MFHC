@@ -390,3 +390,76 @@ data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry <- mfhc_colname_temp(a =
 ```{r}
 data_temp_FebApr2023_KanewaiSpringLedge <- mfhc_colname_temp(a = data_temp_FebApr2023_KanewaiSpringLedge, b = "temp_c_lgr_s_n_20970092_sen_s_n_20970092", c = "date_time_gmt_10_00")
 ```
+
+#Remove the hour indicator
+```{r}
+data_temp_MarApr2022_KalauhaihaiAuwai$date_time <- gsub("\\AM|\\PM", "", data_temp_MarApr2022_KalauhaihaiAuwai$date_time)
+
+data_temp_MarApr2022_KalauhaihaiCoconutTree$date_time <- gsub("\\AM|\\PM", "", data_temp_MarApr2022_KalauhaihaiCoconutTree$date_time)
+
+data_temp_MarApr2022_KalauhaihaiGarage$date_time <- gsub("\\AM|\\PM", "", data_temp_MarApr2022_KalauhaihaiGarage$date_time)
+
+data_temp_MarApr2022_KalauhaihaiHighway$date_time <- gsub("\\AM|\\PM", "", data_temp_MarApr2022_KalauhaihaiHighway$date_time)
+
+data_temp_MarApr2022_KalauhaihaiMakaha$date_time <- gsub("\\AM|\\PM", "", data_temp_MarApr2022_KalauhaihaiMakaha$date_time)
+
+data_temp_MarApr2022_KalauhaihaiOctopusTree$date_time <- gsub("\\AM|\\PM", "", data_temp_MarApr2022_KalauhaihaiOctopusTree$date_time)
+
+data_temp_Nov2022Feb2023_KalauhaihaiGarage$date_time <- gsub("\\AM|\\PM", "", data_temp_Nov2022Feb2023_KalauhaihaiGarage$date_time)
+
+data_temp_Nov2022Feb2023_KalauhaihaiMakaha$date_time <- gsub("\\AM|\\PM", "", data_temp_Nov2022Feb2023_KalauhaihaiMakaha$date_time)
+
+data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge$date_time <- gsub("\\AM|\\PM", "", data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge$date_time)
+
+data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk$date_time <- gsub("\\AM|\\PM", "", data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk$date_time)
+
+data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry$date_time <- gsub("\\AM|\\PM", "", data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry$date_time)
+
+data_temp_Oct2022Feb2023_KanewaiSpringLedge$date_time <- gsub("\\AM|\\PM", "", data_temp_Oct2022Feb2023_KanewaiSpringLedge$date_time)
+
+```
+
+
+# Convert  date/time column to UTC class in .csv data
+
+```{r}
+data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge$date_time <- mdy_hms(data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge$date_time)
+
+data_temp_Sept2021June2022_KalauhaihaiMakaha$date_time <- mdy_hms(data_temp_Sept2021June2022_KalauhaihaiMakaha$date_time)
+
+data_temp_MarApr2022_KalauhaihaiAuwai$date_time <- mdy_hms(data_temp_MarApr2022_KalauhaihaiAuwai$date_time)
+
+data_temp_MarApr2022_KalauhaihaiCoconutTree$date_time <- mdy_hms(data_temp_MarApr2022_KalauhaihaiCoconutTree$date_time)
+
+data_temp_MarApr2022_KalauhaihaiGarage$date_time <- mdy_hms(data_temp_MarApr2022_KalauhaihaiGarage$date_time)
+
+data_temp_MarApr2022_KalauhaihaiHighway$date_time <- mdy_hms(data_temp_MarApr2022_KalauhaihaiHighway$date_time)
+
+data_temp_MarApr2022_KalauhaihaiMakaha$date_time <- mdy_hms(data_temp_MarApr2022_KalauhaihaiMakaha$date_time)
+
+data_temp_MarApr2022_KalauhaihaiOctopusTree$date_time <- mdy_hms(data_temp_MarApr2022_KalauhaihaiOctopusTree$date_time)
+
+data_temp_Nov2022Feb2023_KalauhaihaiGarage$date_time <- mdy_hms(data_temp_Nov2022Feb2023_KalauhaihaiGarage$date_time)
+
+data_temp_Nov2022Feb2023_KalauhaihaiMakaha$date_time <- mdy_hms(data_temp_Nov2022Feb2023_KalauhaihaiMakaha$date_time)
+
+data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge$date_time <- mdy_hms(data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge$date_time)
+
+data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk$date_time <- mdy_hms(data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk$date_time)
+
+data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry$date_time <- mdy_hms(data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry$date_time)
+
+data_temp_Oct2022Feb2023_KanewaiSpringLedge$date_time <- mdy_hms(data_temp_Oct2022Feb2023_KanewaiSpringLedge$date_time)
+
+data_temp_FebApr2023_KalauhaihaiGarage$date_time <- mdy_hms(data_temp_FebApr2023_KalauhaihaiGarage$date_time)
+
+data_temp_FebApr2023_KalauhaihaiMakaha$date_time <- mdy_hms(data_temp_FebApr2023_KalauhaihaiMakaha$date_time)
+
+data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge$date_time <- mdy_hms(data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge$date_time)
+
+data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk$date_time <- mdy_hms(data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk$date_time)
+
+data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry$date_time <- mdy_hms(data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry$date_time)
+
+data_temp_FebApr2023_KanewaiSpringLedge$date_time <- mdy_hms(data_temp_FebApr2023_KanewaiSpringLedge$date_time)
+```
