@@ -215,3 +215,51 @@ data_temp_FebApr2023_KanewaiSpringLedge <- data_temp_FebApr2023_KanewaiSpringLed
   clean_names()
 ```
 
+#Merge Date and Time columns for txt files
+```{r message=FALSE, warning=FALSE}
+data_temp_JuneOct2022_KalauhaihaiGarage <- data_temp_JuneOct2022_KalauhaihaiGarage %>%
+  unite(date_time, date, time, sep = " ")
+
+data_temp_JuneOct2022_KalauhaihaiGarage$date_time <- mdy_hms(data_temp_JuneOct2022_KalauhaihaiGarage$date_time)
+
+
+data_temp_JuneOct2022_KalauhaihaiMakaha <- data_temp_JuneOct2022_KalauhaihaiMakaha %>%
+  unite(date_time, date, time, sep = " ")
+
+data_temp_JuneOct2022_KalauhaihaiMakaha$date_time <- mdy_hms(data_temp_JuneOct2022_KalauhaihaiMakaha$date_time)
+
+
+data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge <- data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge %>%
+  unite(date_time, date, time, sep = " ")
+
+data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge$date_time <- mdy_hms(data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge$date_time)
+
+
+data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk <- data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk %>%
+  unite(date_time, date, time, sep = " ")
+
+data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk$date_time <- mdy_hms(data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk$date_time)
+
+
+data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry <- data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry %>%
+  unite(date_time, Date, Time, sep = " ")
+
+data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry$date_time <- mdy_hms(data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry$date_time)
+
+
+data_temp_JuneOct2022_KanewaiSpringLedge <- data_temp_JuneOct2022_KanewaiSpringLedge %>%
+  unite(date_time, date, time, sep = " ")
+
+data_temp_JuneOct2022_KanewaiSpringLedge$date_time <- mdy_hms(data_temp_JuneOct2022_KanewaiSpringLedge$date_time)
+
+
+data_temp_OctNov2022_KalauhaihaiGarage <- data_temp_OctNov2022_KalauhaihaiGarage %>%
+  unite(date_time, date, time, sep = " ")
+
+data_temp_OctNov2022_KalauhaihaiGarage$date_time <- mdy_hms(data_temp_OctNov2022_KalauhaihaiGarage$date_time)
+
+data_temp_OctNov2022_KalauhaihaiMakaha <- data_temp_OctNov2022_KalauhaihaiMakaha %>%
+  unite(date_time, date, time, sep = " ")
+
+data_temp_OctNov2022_KalauhaihaiMakaha$date_time <- mdy_hms(data_temp_OctNov2022_KalauhaihaiMakaha$date_time)
+```
