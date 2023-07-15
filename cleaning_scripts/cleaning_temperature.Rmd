@@ -127,3 +127,91 @@ data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry <- read_csv(here("raw_da
 ```{r FebApr2023 KanewaiSpringLedge, message=FALSE, warning=FALSE}
 data_temp_FebApr2023_KanewaiSpringLedge <- read_csv(here("raw_data/raw_temperature/data_temp_FebApr2023_KanewaiSpringLedge_20970092.csv"),skip = 1)
 ```
+
+# Clean names 
+```{r}
+data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge <- data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge %>% 
+  clean_names()
+
+data_temp_Sept2021June2022_KalauhaihaiMakaha <- data_temp_Sept2021June2022_KalauhaihaiMakaha %>% 
+  clean_names()
+
+data_temp_MarApr2022_KalauhaihaiAuwai <- data_temp_MarApr2022_KalauhaihaiAuwai %>% 
+  clean_names()
+
+data_temp_MarApr2022_KalauhaihaiCoconutTree <- data_temp_MarApr2022_KalauhaihaiCoconutTree %>% 
+  clean_names()
+
+data_temp_MarApr2022_KalauhaihaiGarage <- data_temp_MarApr2022_KalauhaihaiGarage %>% 
+  clean_names()
+
+data_temp_MarApr2022_KalauhaihaiHighway <- data_temp_MarApr2022_KalauhaihaiHighway %>% 
+  clean_names()
+
+data_temp_MarApr2022_KalauhaihaiMakaha <- data_temp_MarApr2022_KalauhaihaiMakaha %>% 
+  clean_names()
+
+data_temp_MarApr2022_KalauhaihaiOctopusTree <- data_temp_MarApr2022_KalauhaihaiOctopusTree %>% 
+  clean_names()
+
+data_temp_JuneOct2022_KalauhaihaiGarage <- data_temp_JuneOct2022_KalauhaihaiGarage %>% 
+  clean_names()
+
+data_temp_JuneOct2022_KalauhaihaiMakaha <- data_temp_JuneOct2022_KalauhaihaiMakaha %>% 
+  clean_names()
+
+data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge <- data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge %>% 
+  clean_names()
+
+data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk <- data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk %>% 
+  clean_names()
+
+data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry <- data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry %>% 
+  clean_names()
+
+data_temp_JuneOct2022_KanewaiSpringLedge <- data_temp_JuneOct2022_KanewaiSpringLedge %>% 
+  clean_names()
+
+data_temp_OctNov2022_KalauhaihaiGarage <- data_temp_OctNov2022_KalauhaihaiGarage %>% 
+  clean_names()
+
+data_temp_OctNov2022_KalauhaihaiMakaha <- data_temp_OctNov2022_KalauhaihaiMakaha %>% 
+  clean_names()
+
+data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge <- data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge %>% 
+  clean_names()
+
+data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk <- data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk %>% 
+  clean_names()
+
+data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry <- data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry %>% 
+  clean_names()
+
+data_temp_Oct2022Feb2023_KanewaiSpringLedge <- data_temp_Oct2022Feb2023_KanewaiSpringLedge %>% 
+  clean_names()
+
+data_temp_Nov2022Feb2023_KalauhaihaiGarage <- data_temp_Nov2022Feb2023_KalauhaihaiGarage %>% 
+  clean_names()
+
+data_temp_Nov2022Feb2023_KalauhaihaiMakaha <- data_temp_Nov2022Feb2023_KalauhaihaiMakaha %>% 
+  clean_names()
+
+data_temp_FebApr2023_KalauhaihaiGarage <- data_temp_FebApr2023_KalauhaihaiGarage %>% 
+  clean_names()
+
+data_temp_FebApr2023_KalauhaihaiMakaha <- data_temp_FebApr2023_KalauhaihaiMakaha %>% 
+  clean_names()
+
+data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge <- data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge %>% 
+  clean_names()
+
+data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk <- data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk %>% 
+  clean_names()
+
+data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry <- data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry %>% 
+  clean_names()
+
+data_temp_FebApr2023_KanewaiSpringLedge <- data_temp_FebApr2023_KanewaiSpringLedge %>% 
+  clean_names()
+```
+
