@@ -1,0 +1,129 @@
+---
+title: "Temp Cleaning"
+author: "Anson Ekau"
+date: "2023-07-15"
+output: html_document
+---
+
+#Load in packages
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+
+# Read in Temp data — 28 sets
+```{r Sept2021Feb2022 KalauhaihaiAuwaiUnderBridge, message=FALSE, warning=FALSE}
+data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge <- read_csv(here("raw_data/raw_temperature/data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge_20970094.csv"), skip = 1)
+```
+
+```{r Sept2021June2022 KalauhaihaiMakaha, message=FALSE, warning=FALSE}
+data_temp_Sept2021June2022_KalauhaihaiMakaha <- read_csv(here("raw_data/raw_temperature/data_temp_Sept2021June2022_KalauhaihaiMakaha_20970115.csv"), skip = 1)
+```
+
+```{r MarApr2022 KalauhaihaiAuwai, message=FALSE, warning=FALSE}
+data_temp_MarApr2022_KalauhaihaiAuwai <- read_csv(here("raw_data/raw_temperature/data_temp_MarApr2022_KalauhaihaiAuwai_20970122.csv"), skip = 1)
+```
+
+```{r MarApr2022 KalauhaihaiCoconutTree, message=FALSE, warning=FALSE}
+data_temp_MarApr2022_KalauhaihaiCoconutTree <- read_csv(here("raw_data/raw_temperature/data_temp_MarApr2022_KalauhaihaiCoconutTree_20970110.csv"), skip = 1)
+```
+
+```{r MarApr2022 KalauhaihaiGarage, message=FALSE, warning=FALSE}
+data_temp_MarApr2022_KalauhaihaiGarage <- read_csv(here("raw_data/raw_temperature/data_temp_MarApr2022_KalauhaihaiGarage_20970094.csv"), skip = 1)
+```
+
+```{r MarApr2022 KalauhaihaiHighway, message=FALSE, warning=FALSE}
+data_temp_MarApr2022_KalauhaihaiHighway <- read_csv(here("raw_data/raw_temperature/data_temp_MarApr2022_KalauhaihaiHighway_20970092.csv"), skip = 1)
+```
+
+```{r MarApr2022 KalauhaihaiMakaha, message=FALSE, warning=FALSE}
+data_temp_MarApr2022_KalauhaihaiMakaha <- read_csv(here("raw_data/raw_temperature/data_temp_MarApr2022_KalauhaihaiMakaha_20970102.csv"), skip = 1)
+```
+
+```{r MarApr2022 KalauhaihaiOctopusTree, message=FALSE, warning=FALSE}
+data_temp_MarApr2022_KalauhaihaiOctopusTree <- read_csv(here("raw_data/raw_temperature/data_temp_MarApr2022_KalauhaihaiOctopusTree_20970118.csv"), skip = 1)
+```
+
+```{r JuneOct2022 KalauhaihaiGarage, message=FALSE, warning=FALSE}
+data_temp_JuneOct2022_KalauhaihaiGarage <- read_tsv(here("raw_data/raw_temperature/data_temp_JuneOct2022_KalauhaihaiGarage_20970092.txt"))
+```
+
+```{r JuneOct2022 KalauhaihaiMakaha, message=FALSE, warning=FALSE}
+data_temp_JuneOct2022_KalauhaihaiMakaha <- read_tsv(here("raw_data/raw_temperature/data_temp_JuneOct2022_KalauhaihaiMakaha_20970109.txt"))
+```
+
+```{r JuneOct2022 KanewaiAuwaiMakaiSideFootBridge, message=FALSE, warning=FALSE}
+data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge <- read_tsv(here("raw_data/raw_temperature/data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge_20970107.txt"))
+```
+
+```{r JuneOct2022 KanewaiFishpondLedgeEdgeNorfolk, message=FALSE, warning=FALSE}
+data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk <- read_tsv(here("raw_data/raw_temperature/data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk_20970122.txt"))
+```
+
+```{r JuneOct2022 KanewaiFishpondShadeUnderXmasBerry, message=FALSE, warning=FALSE}
+data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry <- read_tsv(here("raw_data/raw_temperature/data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry_20970123.txt"))
+```
+
+```{r JuneOct2022_KanewaiSpringLedge, message=FALSE, warning=FALSE}
+data_temp_JuneOct2022_KanewaiSpringLedge <- read_tsv(here("raw_data/raw_temperature/data_temp_JuneOct2022_KanewaiSpringLedge_20970093.txt"))
+```
+
+```{r OctNov2022 KalauhaihaiGarage, message=FALSE, warning=FALSE}
+data_temp_OctNov2022_KalauhaihaiGarage <- read_tsv(here("raw_data/raw_temperature/data_temp_OctNov2022_KalauhaihaiGarage_21445019.txt"))
+```
+
+```{r OctNov2022 KalauhaihaiMakaha, message=FALSE, warning=FALSE}
+data_temp_OctNov2022_KalauhaihaiMakaha <- read_tsv(here("raw_data/raw_temperature/data_temp_OctNov2022_KalauhaihaiMakaha_21445021.txt"))
+```
+
+```{r Oct2022Feb2023 KanewaiAuwaiMakaiSideFootBridge, message=FALSE, warning=FALSE}
+data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge <- read_csv(here("raw_data/raw_temperature/data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge_20970110.csv"),skip = 1)
+```
+
+```{r Oct2022Feb2023 KanewaiFishpondLedgeEdgeNorfolk, message=FALSE, warning=FALSE}
+data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk <- read_csv(here("raw_data/raw_temperature/data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk_20970094.csv"),skip = 1)
+```
+
+```{r Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry, message=FALSE, warning=FALSE}
+data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry <- read_csv(here("raw_data/raw_temperature/data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry_20970115.csv"),skip = 1)
+```
+
+```{r Oct2022Feb2023 KanewaiSpringLedge, message=FALSE, warning=FALSE}
+data_temp_Oct2022Feb2023_KanewaiSpringLedge <- read_csv(here("raw_data/raw_temperature/data_temp_Oct2022Feb2023_KanewaiSpringLedge_20970102.csv"),skip = 1)
+```
+
+```{r Nov2022Feb2023 KalauhaihaiGarage, message=FALSE, warning=FALSE}
+data_temp_Nov2022Feb2023_KalauhaihaiGarage <- read_csv(here("raw_data/raw_temperature/data_temp_Nov2022Feb2023_KalauhaihaiGarage_20970109.csv"),skip = 1)
+```
+
+```{r Nov2022Feb2023 KalauhaihaiMakaha, message=FALSE, warning=FALSE}
+data_temp_Nov2022Feb2023_KalauhaihaiMakaha <- read_csv(here("raw_data/raw_temperature/data_temp_Nov2022Feb2023_KalauhaihaiMakaha_20970123.csv"),skip = 1)
+```
+
+```{r FebApr2023 KalauhaihaiGarage, message=FALSE, warning=FALSE}
+data_temp_FebApr2023_KalauhaihaiGarage <- read_csv(here("raw_data/raw_temperature/data_temp_FebApr2023_KalauhaihaiGarage_20970122.csv"),skip = 1)
+```
+
+```{r FebApr2023 KalauhaihaiMakaha, message=FALSE, warning=FALSE}
+data_temp_FebApr2023_KalauhaihaiMakaha <- read_csv(here("raw_data/raw_temperature/data_temp_FebApr2023_KalauhaihaiMakaha_20970107.csv"),skip = 1)
+```
+
+```{r FebApr2023 KanewaiAuwaiMakaiSideFootBridge, message=FALSE, warning=FALSE}
+data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge <- read_csv(here("raw_data/raw_temperature/data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge_20970093.csv"),skip = 1)
+```
+
+```{r FebApr2023 KanewaiFishpondLedgeEdgeNorfolk, message=FALSE, warning=FALSE}
+data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk <- read_csv(here("raw_data/raw_temperature/data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk_20970108.csv"),skip = 1)
+```
+
+```{r FebApr2023_KanewaiFishpondShadeUnderXmasBerry, message=FALSE, warning=FALSE}
+data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry <- read_csv(here("raw_data/raw_temperature/data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry_21445019.csv"),skip = 1)
+```
+
+```{r FebApr2023 KanewaiSpringLedge, message=FALSE, warning=FALSE}
+data_temp_FebApr2023_KanewaiSpringLedge <- read_csv(here("raw_data/raw_temperature/data_temp_FebApr2023_KanewaiSpringLedge_20970092.csv"),skip = 1)
+```
