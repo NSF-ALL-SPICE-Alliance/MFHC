@@ -163,10 +163,10 @@ data_temp_JuneOct2022_KalauhaihaiMakaha <- data_temp_JuneOct2022_KalauhaihaiMaka
 data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge <- data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge %>% 
   clean_names()
 
-data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk <- data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk %>% 
+data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry <- data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry %>% 
   clean_names()
 
-data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry <- data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry %>% 
+data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk <- data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk %>% 
   clean_names()
 
 data_temp_JuneOct2022_KanewaiSpringLedge <- data_temp_JuneOct2022_KanewaiSpringLedge %>% 
@@ -242,7 +242,7 @@ data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk$date_time <- mdy_hms(data_
 
 
 data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry <- data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry %>%
-  unite(date_time, Date, Time, sep = " ")
+  unite(date_time, date, time, sep = " ")
 
 data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry$date_time <- mdy_hms(data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry$date_time)
 
@@ -262,4 +262,131 @@ data_temp_OctNov2022_KalauhaihaiMakaha <- data_temp_OctNov2022_KalauhaihaiMakaha
   unite(date_time, date, time, sep = " ")
 
 data_temp_OctNov2022_KalauhaihaiMakaha$date_time <- mdy_hms(data_temp_OctNov2022_KalauhaihaiMakaha$date_time)
+```
+
+#Rename Column Names
+```{r column rename function temp}
+mfhc_colname_temp <- function(a = NULL, b = NULL, c = NULL, x = "temp_celsius", y = "date_time" ){
+  colnames(a)[which(names(a) == b)] <- x
+  colnames(a)[which(names(a) == c)] <- y
+
+  
+  a <- a %>% 
+    select(y, x)
+  
+  return(a)
+}
+```
+
+```{r}
+data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge <- mfhc_colname_temp(a = data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge, b = "temp_c_lgr_s_n_20970094_sen_s_n_20970094", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_Sept2021June2022_KalauhaihaiMakaha <- mfhc_colname_temp(a = data_temp_Sept2021June2022_KalauhaihaiMakaha, b = "temp_c_lgr_s_n_20970115_sen_s_n_20970115", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_MarApr2022_KalauhaihaiAuwai <- mfhc_colname_temp(a = data_temp_MarApr2022_KalauhaihaiAuwai, b = "temp_c_lgr_s_n_20970122_sen_s_n_20970122", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_MarApr2022_KalauhaihaiCoconutTree <- mfhc_colname_temp(a = data_temp_MarApr2022_KalauhaihaiCoconutTree, b = "temp_c_lgr_s_n_20970110_sen_s_n_20970110", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_MarApr2022_KalauhaihaiGarage <- mfhc_colname_temp(a = data_temp_MarApr2022_KalauhaihaiGarage, b = "temp_c_lgr_s_n_20970094_sen_s_n_20970094", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_MarApr2022_KalauhaihaiHighway <- mfhc_colname_temp(a = data_temp_MarApr2022_KalauhaihaiHighway, b = "temp_c_lgr_s_n_20970092_sen_s_n_20970092", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_MarApr2022_KalauhaihaiMakaha <- mfhc_colname_temp(a = data_temp_MarApr2022_KalauhaihaiMakaha, b = "temp_c_lgr_s_n_20970102_sen_s_n_20970102", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_MarApr2022_KalauhaihaiOctopusTree <- mfhc_colname_temp(a = data_temp_MarApr2022_KalauhaihaiOctopusTree, b = "temp_c_lgr_s_n_20970118_sen_s_n_20970118", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_JuneOct2022_KalauhaihaiGarage <- mfhc_colname_temp(a = data_temp_JuneOct2022_KalauhaihaiGarage, b = "temp_c_c_1", c = "date_time")
+```
+
+```{r}
+data_temp_JuneOct2022_KalauhaihaiMakaha <- mfhc_colname_temp(a = data_temp_JuneOct2022_KalauhaihaiMakaha, b = "temp_c_c_1", c = "date_time")
+```
+
+```{r}
+data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge <- mfhc_colname_temp(a = data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge, b = "temp_c_c_1", c = "date_time")
+```
+
+```{r}
+data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry <- mfhc_colname_temp(a = data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry, b = "temp_c_c_1", c = "date_time")
+```
+
+```{r}
+data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk <- mfhc_colname_temp(a = data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk, b = "temp_c_c_1", c = "date_time")
+```
+
+```{r}
+data_temp_JuneOct2022_KanewaiSpringLedge <- mfhc_colname_temp(a = data_temp_JuneOct2022_KanewaiSpringLedge, b = "temp_c_c_1", c = "date_time")
+```
+
+```{r}
+data_temp_OctNov2022_KalauhaihaiGarage <- mfhc_colname_temp(a = data_temp_OctNov2022_KalauhaihaiGarage, b = "temp_c_c_1", c = "date_time")
+```
+
+```{r}
+data_temp_OctNov2022_KalauhaihaiMakaha <- mfhc_colname_temp(a = data_temp_OctNov2022_KalauhaihaiMakaha, b = "temp_c_c_1", c = "date_time")
+```
+
+```{r}
+data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge <- mfhc_colname_temp(a = data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge, b = "temp_c_lgr_s_n_20970110_sen_s_n_20970110", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk <- mfhc_colname_temp(a = data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk, b = "temp_c_lgr_s_n_20970094_sen_s_n_20970094", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry <- mfhc_colname_temp(a = data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry, b = "temp_c_lgr_s_n_20970115_sen_s_n_20970115", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_Oct2022Feb2023_KanewaiSpringLedge <- mfhc_colname_temp(a = data_temp_Oct2022Feb2023_KanewaiSpringLedge, b = "temp_c_lgr_s_n_20970102_sen_s_n_20970102", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_Nov2022Feb2023_KalauhaihaiGarage <- mfhc_colname_temp(a = data_temp_Nov2022Feb2023_KalauhaihaiGarage, b = "temp_c_lgr_s_n_20970109_sen_s_n_20970109", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_Nov2022Feb2023_KalauhaihaiMakaha <- mfhc_colname_temp(a = data_temp_Nov2022Feb2023_KalauhaihaiMakaha, b = "temp_c_lgr_s_n_20970123_sen_s_n_20970123", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_FebApr2023_KalauhaihaiGarage <- mfhc_colname_temp(a = data_temp_FebApr2023_KalauhaihaiGarage, b = "temp_c_lgr_s_n_20970122_sen_s_n_20970122", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_FebApr2023_KalauhaihaiMakaha <- mfhc_colname_temp(a = data_temp_FebApr2023_KalauhaihaiMakaha, b = "temp_c_lgr_s_n_20970107_sen_s_n_20970107", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge <- mfhc_colname_temp(a = data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge, b = "temp_c_lgr_s_n_20970093_sen_s_n_20970093", c = "date_time_gmt_10_00")
+```
+
+
+```{r}
+data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk <- mfhc_colname_temp(a = data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk, b = "temp_c_lgr_s_n_20970108_sen_s_n_20970108", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry <- mfhc_colname_temp(a = data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry, b = "temp_c_lgr_s_n_21445019_sen_s_n_21445019", c = "date_time_gmt_10_00")
+```
+
+```{r}
+data_temp_FebApr2023_KanewaiSpringLedge <- mfhc_colname_temp(a = data_temp_FebApr2023_KanewaiSpringLedge, b = "temp_c_lgr_s_n_20970092_sen_s_n_20970092", c = "date_time_gmt_10_00")
 ```
