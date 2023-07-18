@@ -603,3 +603,8 @@ temp_joined <- temp_joined %>%
                values_to = "value")
 ```
 
+# Write csv to cleaned_temperature folder
+
+```{r}
+write_csv(temp_joined, here("cleaned_data/cleaned_temperature/temp_joined.csv"))
+```
