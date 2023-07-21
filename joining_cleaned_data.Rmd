@@ -34,4 +34,9 @@ all_data <- bind_rows(cleaned_conductivity, cleaned_oxygen, cleaned_pH, cleaned_
 
 
 
+Write Master-Dataframe
+
+```{r}
+write_csv(all_data, here("cleaned_data/master_dataframe.csv"))
+```
 

@@ -469,120 +469,294 @@ data_temp_FebApr2023_KanewaiSpringLedge$date_time <- mdy_hms(data_temp_FebApr202
 # Add location columns
 
 ```{r}
+#Site
 data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge <- 
 data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge <- 
+data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge %>% 
+  mutate(site_specific = "Auwai")
+
+
+#Site
 data_temp_Sept2021June2022_KalauhaihaiMakaha <- data_temp_Sept2021June2022_KalauhaihaiMakaha %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_Sept2021June2022_KalauhaihaiMakaha <- data_temp_Sept2021June2022_KalauhaihaiMakaha %>% 
+  mutate(site_specific = "Makaha")
+
+
+#Site
 data_temp_MarApr2022_KalauhaihaiAuwai <- 
 data_temp_MarApr2022_KalauhaihaiAuwai %>% 
   mutate(site = "Kalauhaihai")
 
+#Site Specific
+data_temp_MarApr2022_KalauhaihaiAuwai <- 
+data_temp_MarApr2022_KalauhaihaiAuwai %>% 
+  mutate(site_specific = "Auwai")
+
+#Site
 data_temp_MarApr2022_KalauhaihaiCoconutTree <- 
 data_temp_MarApr2022_KalauhaihaiCoconutTree %>% 
   mutate(site = "Kalauhaihai")
 
+#Site Specific
+data_temp_MarApr2022_KalauhaihaiCoconutTree <- 
+data_temp_MarApr2022_KalauhaihaiCoconutTree %>% 
+  mutate(site_specific = "Coconut Tree")
+
+# Site
 data_temp_MarApr2022_KalauhaihaiGarage <- 
 data_temp_MarApr2022_KalauhaihaiGarage %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific 
+data_temp_MarApr2022_KalauhaihaiGarage <- 
+data_temp_MarApr2022_KalauhaihaiGarage %>% 
+  mutate(site_specific = "Garage")
+
+#Site
 data_temp_MarApr2022_KalauhaihaiHighway <- 
 data_temp_MarApr2022_KalauhaihaiHighway %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific 
+data_temp_MarApr2022_KalauhaihaiHighway <- 
+data_temp_MarApr2022_KalauhaihaiHighway %>% 
+  mutate(site_specific = "Highway")
+
+# Site
 data_temp_MarApr2022_KalauhaihaiMakaha <- 
 data_temp_MarApr2022_KalauhaihaiMakaha %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific 
+data_temp_MarApr2022_KalauhaihaiMakaha <- 
+data_temp_MarApr2022_KalauhaihaiMakaha %>% 
+  mutate(site_specific = "Makaha")
+
+# Site
 data_temp_MarApr2022_KalauhaihaiOctopusTree <- 
 data_temp_MarApr2022_KalauhaihaiOctopusTree %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_MarApr2022_KalauhaihaiOctopusTree <- 
+data_temp_MarApr2022_KalauhaihaiOctopusTree %>% 
+  mutate(site_specific = "Octopus Tree")
+
+# Site
 data_temp_JuneOct2022_KalauhaihaiGarage <- 
 data_temp_JuneOct2022_KalauhaihaiGarage %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_JuneOct2022_KalauhaihaiGarage <- 
+data_temp_JuneOct2022_KalauhaihaiGarage %>% 
+  mutate(site_specific = "Garage")
+
+# Site
 data_temp_JuneOct2022_KalauhaihaiMakaha <- 
 data_temp_JuneOct2022_KalauhaihaiMakaha %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_JuneOct2022_KalauhaihaiMakaha <- 
+data_temp_JuneOct2022_KalauhaihaiMakaha %>% 
+  mutate(site_specific = "Makaha")
+
+# Site
 data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge <- 
 data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge <- 
+data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge %>% 
+  mutate(site_specific = "Auwai")
+
+# Site
 data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry <- 
 data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry <- 
+data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry %>% 
+  mutate(site_specific = "Xmas Berry")
+
+
+# Site
 data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk <- 
 data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk <- 
+data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk %>% 
+  mutate(site_specific = "Ledge Norfolk")
+
+# Site
 data_temp_JuneOct2022_KanewaiSpringLedge <- 
 data_temp_JuneOct2022_KanewaiSpringLedge %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
 data_temp_JuneOct2022_KanewaiSpringLedge <- 
 data_temp_JuneOct2022_KanewaiSpringLedge %>% 
-  mutate(site = "Kanewai")
+  mutate(site_specific = "Spring Ledge")
 
+#Site
 data_temp_OctNov2022_KalauhaihaiGarage <- 
 data_temp_OctNov2022_KalauhaihaiGarage %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_OctNov2022_KalauhaihaiGarage <- 
+data_temp_OctNov2022_KalauhaihaiGarage %>% 
+  mutate(site_specific = "Garage")
+
+# Site 
 data_temp_OctNov2022_KalauhaihaiMakaha <- 
 data_temp_OctNov2022_KalauhaihaiMakaha %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_OctNov2022_KalauhaihaiMakaha <- 
+data_temp_OctNov2022_KalauhaihaiMakaha %>% 
+  mutate(site_specific = "Makaha")
+
+
+# Site
 data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge <- 
 data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge <- 
+data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge %>% 
+  mutate(site_specific = "Auwai")
+
+# Site
 data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk <- 
 data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk <- 
+data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk %>% 
+  mutate(site_specific = "Ledge Norfolk")
+
+# Site
 data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry <- 
-data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry %>% 
+data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry %>%
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry <- 
+data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry %>%
+  mutate(site_specific = "Xmas Berry")
+
+# Site
 data_temp_Oct2022Feb2023_KanewaiSpringLedge <- 
 data_temp_Oct2022Feb2023_KanewaiSpringLedge %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_Oct2022Feb2023_KanewaiSpringLedge <- 
+data_temp_Oct2022Feb2023_KanewaiSpringLedge %>% 
+  mutate(site_specific = "Spring Ledge")
+
+# Site 
 data_temp_Nov2022Feb2023_KalauhaihaiGarage <- 
 data_temp_Nov2022Feb2023_KalauhaihaiGarage %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_Nov2022Feb2023_KalauhaihaiGarage <- 
+data_temp_Nov2022Feb2023_KalauhaihaiGarage %>% 
+  mutate(site_specific = "Garage")
+
+# Site
 data_temp_Nov2022Feb2023_KalauhaihaiMakaha <- 
 data_temp_Nov2022Feb2023_KalauhaihaiMakaha %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_Nov2022Feb2023_KalauhaihaiMakaha <- 
+data_temp_Nov2022Feb2023_KalauhaihaiMakaha %>% 
+  mutate(site_specific = "Makaha")
+
+# # Site 
+# data_temp_Nov2022Feb2023_KalauhaihaiGarage <- 
+# data_temp_Nov2022Feb2023_KalauhaihaiGarage %>% 
+#   mutate(site = "Garage")
+
+# Site
 data_temp_FebApr2023_KalauhaihaiGarage <- 
 data_temp_FebApr2023_KalauhaihaiGarage %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_FebApr2023_KalauhaihaiGarage <- 
+data_temp_FebApr2023_KalauhaihaiGarage %>% 
+  mutate(site_specific = "Garage")
+
+
+# Site 
 data_temp_FebApr2023_KalauhaihaiMakaha <- 
 data_temp_FebApr2023_KalauhaihaiMakaha %>% 
   mutate(site = "Kalauhaihai")
 
+# Site Specific
+data_temp_FebApr2023_KalauhaihaiMakaha <- 
+data_temp_FebApr2023_KalauhaihaiMakaha %>% 
+  mutate(site_specific = "Makaha")
+
+# Site
 data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge <- 
 data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge <- 
+data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge %>% 
+  mutate(site_specific = "Auwai")
+
+# Site
 data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk <- 
 data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk <- 
+data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk %>% 
+  mutate(site_specific = "Ledge Norfolk")
+
+# Site
 data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry <- 
 data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry %>% 
   mutate(site = "Kanewai")
 
+# Site Specific
+data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry <- 
+data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry %>% 
+  mutate(site_specific = "Xmas Berry")
+
+# Site 
 data_temp_FebApr2023_KanewaiSpringLedge <- 
 data_temp_FebApr2023_KanewaiSpringLedge %>% 
   mutate(site = "Kanewai")
+
+# Site Specific
+data_temp_FebApr2023_KanewaiSpringLedge <- 
+data_temp_FebApr2023_KanewaiSpringLedge %>% 
+  mutate(site_specific = "Spring Ledge")
+
 
 ```
 
