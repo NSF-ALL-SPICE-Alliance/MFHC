@@ -110,6 +110,12 @@ data_conductivity_FebApr2023_Kanewai$date_time <- mdy_hms(data_conductivity_FebA
 data_conductivity_FebApr2023_Kalauhaihai$date_time <- mdy_hms(data_conductivity_FebApr2023_Kalauhaihai$date_time)
 ```
 
+
+
+```{r}
+data_conductivity_OctNov2022_Kalauhaihai$date_time <- ydm_hms(data_conductivity_OctNov2022_Kalauhaihai$date_time)
+```
+
 # Format data to be joined with other variables and locations
 
 # Add location columns
@@ -125,7 +131,23 @@ data_conductivity_OctNov2022_Kalauhaihai <- data_conductivity_OctNov2022_Kalauha
   mutate(site = "Kalauhaihai")
 ```
 
-# Maybe Trimming
+Trimming
+
+```{r}
+
+data_conductivity_FebApr2023_Kalauhaihai <- data_conductivity_FebApr2023_Kalauhaihai[data_conductivity_FebApr2023_Kalauhaihai$date_time > "2023-02-10 00:00:00" &    # Extract data frame subset
+                   data_conductivity_FebApr2023_Kalauhaihai$date_time < "2023-04-06 00:00:00", ]
+
+
+data_conductivity_FebApr2023_Kanewai <- data_conductivity_FebApr2023_Kanewai %>% 
+  filter(date_time >= "2023-02-10 00:00:00" & date_time <= "2023-04-06 00:00:00")
+
+data_conductivity_OctNov2022_Kalauhaihai <- data_conductivity_OctNov2022_Kalauhaihai %>% 
+  filter(date_time >= "2022-10-06 10:10:00" & date_time <= "2022-11-10 09:30:00")
+
+
+```
+
 
 # Join Conductivity Data
 
