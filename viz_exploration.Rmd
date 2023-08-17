@@ -1,0 +1,67 @@
+---
+title: "viz exploration"
+author: "Connor Flynn"
+date: "8/17/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(naniar)
+options(scipen = 999)
+```
+
+
+```{r}
+all_data <- read_csv(here("cleaned_data/master_dataframe.csv"))
+```
+
+
+```{r}
+all_data <- all_data %>%
+  mutate(site_specific = case_when(
+    is.na(site_specific) ~ "none",
+    TRUE ~ site_specific
+  ))
+```
+
+
+```{r}
+sum(is.na(all_data))
+```
+
+```{r}
+gg_miss_var(all_data)
+```
+
+
+```{r}
+# Check for duplicate rows in all_data
+duplicate_rows <- all_data[duplicated(all_data) | duplicated(all_data, fromLast = TRUE), ]
+
+# Display the duplicate rows (if any)
+print(duplicate_rows)
+```
+
+
+
+```{r}
+all_data_wider <- all_data %>% 
+  pivot_wider(names_from = "variable",
+              values_from = "value")
+```
+
+
+```{r}
+all_data_wider$pH <- as.numeric(all_data_wider$pH)
+```
+
+
+
+```{r}
+ggplot(all_data_wider, aes(x = pH, y = dissolved_oxygen_mg_l)) +
+  geom_point() +
+  theme_minimal()
+```
+
