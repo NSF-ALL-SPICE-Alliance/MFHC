@@ -148,7 +148,7 @@ data_oxygen_FebApr2023_KanewaiSpringRock <-
 
 data_oxygen_AprMay2023_Kalauhaihai <-
   data_oxygen_AprMay2023_Kalauhaihai %>% 
-  filter(date_time >= "2023-04-28 15:10:00" & date_time <= "2023-06-01 9:30:00")
+  filter(date_time >= "2023-04-28 15:10:00" & date_time <= "2023-05-31 9:30:00")
 
 ```
 
