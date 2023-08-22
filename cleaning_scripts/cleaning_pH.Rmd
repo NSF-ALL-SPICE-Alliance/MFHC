@@ -118,6 +118,24 @@ data_pH_Apr2022_Kalauhaihai <- data_pH_Apr2022_Kalauhaihai %>%
 ```
 
 # Maybe Trimming
+```{r}
+data_pH_OctNov2022_Kalauhaihai <- 
+  data_pH_OctNov2022_Kalauhaihai %>% 
+  filter(date_time >= "2022-06-10 10:10:00" & date_time <= "2022-11-09 9:30:00")
+
+data_pH_FebApr2023_Kalauhaihai <-
+  data_pH_FebApr2023_Kalauhaihai %>% 
+  filter(date_time >= "2023-02-16 9:52:00" & date_time <= "2023-04-05 09:35:00")
+
+data_pH_FebApr2023_KanewaiSpringRock <-
+  data_pH_FebApr2023_KanewaiSpringRock %>% 
+  filter(date_time >= "2023-02-09 9:52:00" & date_time <= "2023-04-05 10:15:00")
+
+data_pH_Apr2022_Kalauhaihai <-
+  data_pH_Apr2022_Kalauhaihai %>% 
+  filter(date_time >= "2023-04-28 15:10:00" & date_time <= "2023-05-31 09:30:00")
+
+```
 
 # Join pH Data
 
