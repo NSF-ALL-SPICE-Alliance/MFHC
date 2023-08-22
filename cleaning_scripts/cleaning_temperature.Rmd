@@ -763,106 +763,106 @@ data_temp_FebApr2023_KanewaiSpringLedge %>%
 # Maybe Trimming
 ```{r}
 data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge <- data_temp_Sept2021Feb2022_KalauhaihaiAuwaiUnderBridge %>% 
-  filter(date_time >= "2021-09-13 13:00:00" & date_time <= "2022-02-17 9:00:00")
+  filter(date_time >= "2021-09-13 13:00:00" & date_time <= "2022-02-16 9:00:00")
 
 data_temp_Sept2021June2022_KalauhaihaiMakaha <-
   data_temp_Sept2021June2022_KalauhaihaiMakaha %>% 
-  filter(date_time >= "2021-09-13 13:00:00" & date_time <= "2022-06-10 15:55:00")
+  filter(date_time >= "2021-09-13 13:00:00" & date_time <= "2022-06-09 15:55:00")
 
 data_temp_MarApr2022_KalauhaihaiAuwai <-
   data_temp_MarApr2022_KalauhaihaiAuwai %>% 
-  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-21 9:30:00")
+  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-20 9:30:00")
 
 data_temp_MarApr2022_KalauhaihaiCoconutTree <-
   data_temp_MarApr2022_KalauhaihaiCoconutTree %>% 
-  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-21 9:30:00")
+  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-20 9:30:00")
 
 data_temp_MarApr2022_KalauhaihaiGarage <-
   data_temp_MarApr2022_KalauhaihaiGarage %>% 
-  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-21 9:30:00")
+  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-20 9:30:00")
 
 data_temp_MarApr2022_KalauhaihaiHighway <-
   data_temp_MarApr2022_KalauhaihaiHighway %>% 
-  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-21 9:30:00")
+  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-20 9:30:00")
 
 data_temp_MarApr2022_KalauhaihaiMakaha <-
   data_temp_MarApr2022_KalauhaihaiMakaha %>% 
-  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-21 9:30:00")
+  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-20 9:30:00")
 
 data_temp_MarApr2022_KalauhaihaiOctopusTree <-
   data_temp_MarApr2022_KalauhaihaiOctopusTree %>% 
-  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-21 9:30:00")
+  filter(date_time >= "2022-03-03 10:50:00" & date_time <= "2022-04-20 9:30:00")
 
 data_temp_JuneOct2022_KalauhaihaiGarage <-
   data_temp_JuneOct2022_KalauhaihaiGarage %>% 
-  filter(date_time >= "2022-06-10 15:55:00" & date_time <= "2022-10-06 9:30:00")
+  filter(date_time >= "2022-06-10 15:55:00" & date_time <= "2022-10-05 9:30:00")
 
 data_temp_JuneOct2022_KalauhaihaiMakaha <-
   data_temp_JuneOct2022_KalauhaihaiMakaha %>% 
-  filter(date_time >= "2022-06-10 15:50:00" & date_time <= "2022-10-06 9:40:00")
+  filter(date_time >= "2022-06-10 15:50:00" & date_time <= "2022-10-05 9:40:00")
 
 data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge <-
   data_temp_JuneOct2022_KanewaiAuwaiMakaiSideFootBridge %>% 
-  filter(date_time >= "2022-06-10 15:05:00" & date_time <= "2022-10-10 14:50:00")
+  filter(date_time >= "2022-06-10 15:05:00" & date_time <= "2022-10-09 14:50:00")
 
 data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry <-
   data_temp_JuneOct2022_KanewaiFishpondShadeUnderXmasBerry %>% 
-  filter(date_time >= "2022-06-10 2:50:00" & date_time <= "2022-10-10 15:00:00")
+  filter(date_time >= "2022-06-10 2:50:00" & date_time <= "2022-10-09 15:00:00")
 
 data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk <-
   data_temp_JuneOct2022_KanewaiFishpondLedgeEdgeNorfolk %>% 
-  filter(date_time >= "2022-06-10 15:20:00" & date_time <= "2022-10-10 14:45:00")
+  filter(date_time >= "2022-06-10 15:20:00" & date_time <= "2022-10-09 14:45:00")
 
 data_temp_JuneOct2022_KanewaiSpringLedge <-
   data_temp_JuneOct2022_KanewaiSpringLedge %>% 
-  filter(date_time >= "2022-06-10 14:45:00" & date_time <= "2022-10-10 15:05:00")
+  filter(date_time >= "2022-06-10 14:45:00" & date_time <= "2022-10-09 15:05:00")
 
 data_temp_OctNov2022_KalauhaihaiGarage <-
   data_temp_OctNov2022_KalauhaihaiGarage %>% 
-  filter(date_time >= "2022-10-06 10:10:00" & date_time <= "2022-11-10 9:30:00")
+  filter(date_time >= "2022-10-06 10:10:00" & date_time <= "2022-11-09 9:30:00")
 
 data_temp_OctNov2022_KalauhaihaiMakaha <-
   data_temp_OctNov2022_KalauhaihaiMakaha %>% 
-  filter(date_time >= "2022-10-06 10:10:00" & date_time <= "2022-11-10 9:30:00")
+  filter(date_time >= "2022-10-06 10:10:00" & date_time <= "2022-11-09 9:30:00")
 
 data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge <-
   data_temp_Oct2022Feb2023_KanewaiAuwaiMakaiSideFootBridge %>% 
-  filter(date_time >= "2022-10-10 15:00:00" & date_time <= "2023-02-09 10:29:00")
+  filter(date_time >= "2022-10-10 15:00:00" & date_time <= "2023-02-08 10:29:00")
 
 data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk <-
   data_temp_Oct2022Feb2023_KanewaiFishpondLedgeEdgeNorfolk %>% 
-  filter(date_time >= "2022-10-10 14:50:00" & date_time <= "2023-02-09 10:51:00")
+  filter(date_time >= "2022-10-10 14:50:00" & date_time <= "2023-02-08 10:51:00")
 
 data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry <-
   data_temp_Oct2022Feb2023_KanewaiFishpondShadeUnderXmasBerry %>% 
-  filter(date_time >= "2022-10-10 15:05:00" & date_time <= "2023-02-09 10:31:00")
+  filter(date_time >= "2022-10-10 15:05:00" & date_time <= "2023-02-08 10:31:00")
 
 data_temp_Oct2022Feb2023_KanewaiSpringLedge <- data_temp_Oct2022Feb2023_KanewaiSpringLedge %>% 
-  filter(date_time >= "2022-10-10 15:10:00" & date_time <= "2023-02-09 10:43:00")
+  filter(date_time >= "2022-10-10 15:10:00" & date_time <= "2023-02-08 10:43:00")
 
 data_temp_Nov2022Feb2023_KalauhaihaiGarage <- data_temp_Nov2022Feb2023_KalauhaihaiGarage %>% 
-  filter(date_time >= "2022-11-10 9:50:00" & date_time <= "2023-02-16 09:27:00")
+  filter(date_time >= "2022-11-10 9:50:00" & date_time <= "2023-02-15 09:27:00")
 
 data_temp_Nov2022Feb2023_KalauhaihaiMakaha <- data_temp_Nov2022Feb2023_KalauhaihaiMakaha %>% 
-  filter(date_time >= "2022-11-10 9:50:00" & date_time <= "2023-02-16 09:31:00")
+  filter(date_time >= "2022-11-10 9:50:00" & date_time <= "2023-02-15 09:31:00")
 
 data_temp_FebApr2023_KalauhaihaiGarage <- data_temp_FebApr2023_KalauhaihaiGarage %>% 
-  filter(date_time >= "2022-02-16 9:52:00" & date_time <= "2023-04-06 09:35:00")
+  filter(date_time >= "2022-02-16 9:52:00" & date_time <= "2023-04-05 09:35:00")
 
 data_temp_FebApr2023_KalauhaihaiMakaha <- data_temp_FebApr2023_KalauhaihaiMakaha %>% 
-  filter(date_time >= "2022-02-16 9:32:00" & date_time <= "2023-04-06 09:48:00")
+  filter(date_time >= "2022-02-16 9:32:00" & date_time <= "2023-04-05 09:48:00")
 
 data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge <- data_temp_FebApr2023_KanewaiAuwaiMakaiSideFootBridge %>% 
-  filter(date_time >= "2022-02-09 10:31:00" & date_time <= "2023-04-06 10:17:00")
+  filter(date_time >= "2022-02-09 10:31:00" & date_time <= "2023-04-05 10:17:00")
 
 data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk <- data_temp_FebApr2023_KanewaiFishpondLedgeEdgeNorfolk %>% 
-  filter(date_time >= "2022-02-09 10:53:00" & date_time <= "2023-04-06 10:25:00")
+  filter(date_time >= "2022-02-09 10:53:00" & date_time <= "2023-04-05 10:25:00")
 
 data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry <- data_temp_FebApr2023_KanewaiFishpondShadeUnderXmasBerry %>% 
-  filter(date_time >= "2022-02-09 10:32:00" & date_time <= "2023-04-06 10:21:00")
+  filter(date_time >= "2022-02-09 10:32:00" & date_time <= "2023-04-05 10:21:00")
 
 data_temp_FebApr2023_KanewaiSpringLedge <- data_temp_FebApr2023_KanewaiSpringLedge %>% 
-  filter(date_time >= "2022-02-09 10:47:00" & date_time <= "2023-04-06 10:32:00")
+  filter(date_time >= "2022-02-09 10:47:00" & date_time <= "2023-04-05 10:32:00")
 ```
 
 
