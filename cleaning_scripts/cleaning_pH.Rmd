@@ -56,7 +56,7 @@ data_pH_Apr2022_Kalauhaihai %>%
 data_pH_OctNov2022_Kalauhaihai <- data_pH_OctNov2022_Kalauhaihai %>%
   unite(date_time, date, time, sep = " ")
 
-data_pH_OctNov2022_Kalauhaihai$date_time <- mdy_hms(data_pH_OctNov2022_Kalauhaihai$date_time)
+data_pH_OctNov2022_Kalauhaihai$date_time <- dmy_hms(data_pH_OctNov2022_Kalauhaihai$date_time)
 ```
 
 # Rename Column Names
@@ -96,6 +96,7 @@ data_pH_Apr2022_Kalauhaihai <- mfhc_colname_pH(a = data_pH_Apr2022_Kalauhaihai, 
 data_pH_FebApr2023_KanewaiSpringRock$date_time <- mdy_hms(data_pH_FebApr2023_KanewaiSpringRock$date_time)
 
 data_pH_FebApr2023_Kalauhaihai$date_time <- mdy_hms(data_pH_FebApr2023_Kalauhaihai$date_time)
+
 ```
 
 # Format data to be joined with other variables and locations
@@ -121,7 +122,7 @@ data_pH_Apr2022_Kalauhaihai <- data_pH_Apr2022_Kalauhaihai %>%
 ```{r}
 data_pH_OctNov2022_Kalauhaihai <- 
   data_pH_OctNov2022_Kalauhaihai %>% 
-  filter(date_time >= "2022-06-10 10:10:00" & date_time <= "2022-11-09 9:30:00")
+  filter(date_time >= "2022-10-07 10:10:00" & date_time <= "2022-11-09 9:30:00")
 
 data_pH_FebApr2023_Kalauhaihai <-
   data_pH_FebApr2023_Kalauhaihai %>% 
@@ -133,7 +134,7 @@ data_pH_FebApr2023_KanewaiSpringRock <-
 
 data_pH_Apr2022_Kalauhaihai <-
   data_pH_Apr2022_Kalauhaihai %>% 
-  filter(date_time >= "2023-04-28 15:10:00" & date_time <= "2023-05-31 09:30:00")
+  filter(date_time >= "2022-04-09 15:10:00" & date_time <= "2022-04-19 09:30:00")
 
 ```
 

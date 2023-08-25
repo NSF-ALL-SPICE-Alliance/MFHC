@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(naniar)
 library(here)
+library(plotly)
 options(scipen = 999)
 ```
 
@@ -26,6 +27,12 @@ all_data <- all_data %>%
     TRUE ~ site_specific
   ))
 ```
+
+
+```{r}
+table(all_data$site_specific)
+```
+
 
 
 ```{r}
@@ -60,6 +67,9 @@ all_data_distinct <- distinct(all_data)
     dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
     dplyr::filter(n > 1L)
 ```
+```{r}
+table(all_data_distinct$site_specific)
+```
 
 
 
@@ -69,6 +79,10 @@ all_data_distinct_wider <- all_data_distinct %>%
   pivot_wider(names_from = "variable",
               values_from = "value",
               values_fn = "mean")
+```
+
+```{r}
+table(all_data_distinct_wider$site_specific)
 ```
 
 
@@ -89,8 +103,77 @@ ggplot(all_data_distinct_wider, aes(x = mv)) +
 
 
 ```{r}
-ggplot(all_data_distinct_wider, aes(x = pH, y = temp_celsius)) +
-  geom_point() +
+table(all_data_distinct_wider$site_specific)
+```
+
+
+Temperature Interrogation
+
+
+```{r}
+all_temp_density <- ggplot(all_data_distinct_wider, aes(x = temp_celsius, fill = site_specific)) +
+  geom_density(alpha = 0.3) +
+  facet_wrap(~site) +
   theme_minimal()
+ggplotly(all_temp_density)
+```
+
+
+```{r}
+all_temp_line <- ggplot(all_data_distinct_wider, aes(x = date_time, y = temp_celsius, color = site)) +
+  geom_line() +
+  facet_wrap(~site_specific, scales = "free") +
+  theme_minimal()
+ggplotly(all_temp_line)
+```
+
+
+
+
+pH Interrogation
+
+```{r}
+all_pH_density <- ggplot(all_data_distinct_wider, aes(x = pH, fill = site)) +
+  geom_density(alpha = 0.3) +
+  theme_minimal()
+ggplotly(all_pH_density)
+```
+
+
+**Need to figure out problem with pH and time**
+
+```{r}
+ggplot(all_data_distinct_wider, aes(x = date_time, y = pH)) +
+  geom_line() +
+  theme_minimal()
+
+```
+```{r}
+kanewai_pH <- all_data_distinct_wider %>% 
+  filter(site == "Kanewai")
+```
+
+```{r}
+ggplot(kanewai_pH, aes(x = date_time, y = pH)) +
+         geom_line()
+```
+```{r}
+kalauhaihai_pH <- all_data_distinct_wider %>% 
+  filter(site == "Kalauhaihai")
+```
+
+```{r}
+ggplot(kalauhaihai_pH, aes(x = date_time, y = pH)) +
+         geom_line()
+```
+
+
+```{r}
+pH_data <- all_data_distinct_wider %>% 
+  select(date_time, site, pH)
+```
+
+```{r}
+gg_miss_var(pH_data)
 ```
 

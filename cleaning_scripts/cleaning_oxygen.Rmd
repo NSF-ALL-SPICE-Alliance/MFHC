@@ -28,7 +28,7 @@ data_oxygen_FebApr2023_Kalauhaihai <- read_csv(here("raw_data/raw_oxygen/Data_ox
 ```{r FebApr2023 Kanewai, message=FALSE, warning=FALSE}
 data_oxygen_FebApr2023_KanewaiSpringRock <- read_csv(here("raw_data/raw_oxygen/Data_oxygen_FebApr2023_KanewaiSpringRock_21515403.csv"), skip = 1)
 ```
-
+Note - something may be wrong with monitor so trimmed dates where measures wer not -888.88
 ```{r AprMay2023 Kalauhaihai, message=FALSE, warning=FALSE}
 data_oxygen_AprMay2023_Kalauhaihai <- read_csv(here("raw_data/raw_oxygen/data_oxygen_AprMay2023_Kalauhaihai_21446085.csv"), skip = 1)
 ```
@@ -148,7 +148,7 @@ data_oxygen_FebApr2023_KanewaiSpringRock <-
 
 data_oxygen_AprMay2023_Kalauhaihai <-
   data_oxygen_AprMay2023_Kalauhaihai %>% 
-  filter(date_time >= "2023-04-28 15:10:00" & date_time <= "2023-05-31 9:30:00")
+  filter(date_time >= "2023-04-28 15:10:00" & date_time <= "2023-05-05 9:30:00")
 
 ```
 
