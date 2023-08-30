@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
+library(naniar)
 ```
 
 
@@ -32,6 +33,11 @@ Join Data using bind_rows()
 all_data <- bind_rows(cleaned_conductivity, cleaned_oxygen, cleaned_pH, cleaned_temperature)
 ```
 
+Check Na's
+
+```{r}
+miss_var_summary(all_data)
+```
 
 
 Write Master-Dataframe

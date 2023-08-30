@@ -18,7 +18,7 @@ options(scipen = 999)
 ```{r}
 all_data <- read_csv(here("cleaned_data/master_dataframe.csv"))
 ```
-
+Change NA to "None" for Kanewai or Kaluahaihai measurements that don't have a site_specific location
 
 ```{r}
 all_data <- all_data %>%
@@ -47,7 +47,12 @@ all_data <- drop_na(all_data)
 ```
 
 
+```{r}
+sum(is.na(all_data))
+```
 
+Check duplicated rows
+- All monitors also measure temp so there are duplicates for same variable, place, time
 
 ```{r}
  all_data %>%
@@ -121,10 +126,11 @@ ggplotly(all_temp_density)
 
 ```{r}
 all_temp_line <- ggplot(all_data_distinct_wider, aes(x = date_time, y = temp_celsius, color = site)) +
-  geom_line() +
+  geom_point(size = 0.2) +
   facet_wrap(~site_specific, scales = "free") +
   theme_minimal()
-ggplotly(all_temp_line)
+#ggplotly(all_temp_line)
+all_temp_line
 ```
 
 
@@ -143,23 +149,20 @@ ggplotly(all_pH_density)
 **Need to figure out problem with pH and time**
 
 ```{r}
-ggplot(all_data_distinct_wider, aes(x = date_time, y = pH)) +
-  geom_line() +
+ggplot(all_data_distinct_wider, aes(x = date_time, y = pH, color = site)) +
+  geom_point(size = 0.2) +
   theme_minimal()
 
 ```
-```{r}
-kanewai_pH <- all_data_distinct_wider %>% 
-  filter(site == "Kanewai")
-```
 
-```{r}
-ggplot(kanewai_pH, aes(x = date_time, y = pH)) +
-         geom_line()
-```
 ```{r}
 kalauhaihai_pH <- all_data_distinct_wider %>% 
   filter(site == "Kalauhaihai")
+
+kalauhaihai_pH <- kalauhaihai_pH %>% 
+  select(date_time, pH, site)
+
+kalauhaihai_pH <- drop_na(kalauhaihai_pH)
 ```
 
 ```{r}
@@ -171,9 +174,69 @@ ggplot(kalauhaihai_pH, aes(x = date_time, y = pH)) +
 ```{r}
 pH_data <- all_data_distinct_wider %>% 
   select(date_time, site, pH)
+
+pH_data <- drop_na(pH_data)
 ```
 
 ```{r}
-gg_miss_var(pH_data)
+table(pH_data$site)
 ```
+
+
+```{r}
+ggplot(pH_data, aes(x = date_time, y = pH, color = site)) +
+  geom_point(size = 0.2) +
+  facet_wrap(~ site, scales = "free_x", ncol = 1) +
+  labs(x = "Date Time", y = "pH") +
+  theme_minimal()
+```
+
+Oxygen
+
+```{r}
+all_oxygen_density <- ggplot(all_data_distinct_wider, aes(x = dissolved_oxygen_mg_l, fill = site)) +
+  geom_density(alpha = 0.3) +
+  theme_minimal()
+ggplotly(all_oxygen_density)
+```
+
+```{r}
+oxygen_plot <- ggplot(all_data_distinct_wider, aes(x = date_time, y = dissolved_oxygen_mg_l, color = site)) +
+  geom_point(size = 0.3) +
+  facet_wrap(~site, scales = "free") +
+  theme_minimal()
+#ggplotly(oxygen_plot)
+oxygen_plot
+```
+
+```{r}
+oxygen_data <- all_data_distinct_wider %>% 
+  select(date_time, dissolved_oxygen_mg_l, site)
+
+oxygen_data <- drop_na(oxygen_data)
+```
+
+
+
+
+Conductivity
+
+```{r}
+all_conductivity_density <- ggplot(all_data_distinct_wider, aes(x = high_range_microSiemens, fill = site)) +
+  geom_density(alpha = 0.3) +
+  theme_minimal()
+ggplotly(all_conductivity_density)
+```
+
+```{r}
+conductivity_plot <- ggplot(all_data_distinct_wider, aes(x = date_time, y = high_range_microSiemens, color = site)) +
+  geom_point(size = 0.5) +
+  facet_wrap(~site, scales = "free") +
+  theme_minimal()
+#ggplotly(conductivity_plot)
+conductivity_plot
+```
+
+
+histogram by month
 
