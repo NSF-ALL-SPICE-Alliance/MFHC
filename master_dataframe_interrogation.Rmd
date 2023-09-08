@@ -83,7 +83,7 @@ table(all_data_distinct$site_specific)
 all_data_distinct_wider <- all_data_distinct %>% 
   pivot_wider(names_from = "variable",
               values_from = "value",
-              values_fn = "mean")
+              values_fn = mean)
 ```
 
 ```{r}
