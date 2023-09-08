@@ -184,12 +184,18 @@ table(pH_data$site)
 
 
 ```{r}
-ggplot(pH_data, aes(x = date_time, y = pH, color = site)) +
+a <- ggplot(pH_data, aes(x = date_time, y = pH, color = site)) +
   geom_point(size = 0.2) +
   facet_wrap(~ site, scales = "free_x", ncol = 1) +
   labs(x = "Date Time", y = "pH") +
   theme_minimal()
+a
 ```
+```{r}
+ggplotly(a)
+```
+
+
 
 Oxygen
 
