@@ -123,9 +123,15 @@ all_temp_density <- ggplot(all_data_distinct_wider, aes(x = temp_celsius, fill =
 ggplotly(all_temp_density)
 ```
 
+```{r}
+all_data_distinct_wider_seq <- all_data_distinct_wider %>%
+  select(date_time, temp_celsius, site, site_specific) %>% 
+  complete(date_time = seq(min(date_time), max(date_time), by = "1 day"), fill = list(temp_celsius = NA), nesting(site, site_specific))
+
+```
 
 ```{r}
-all_temp_line <- ggplot(all_data_distinct_wider, aes(x = date_time, y = temp_celsius, color = site)) +
+all_temp_line <- ggplot(all_data_distinct_wider_seq, aes(x = date_time, y = temp_celsius, color = site)) +
   #geom_point(size = 0.2) +
   geom_line() +
   facet_wrap(~site_specific, scales = "free") +
@@ -164,11 +170,16 @@ kalauhaihai_pH <- kalauhaihai_pH %>%
   select(date_time, pH, site)
 
 kalauhaihai_pH <- drop_na(kalauhaihai_pH)
+
+kalauhaihai_pH <- kalauhaihai_pH %>%
+  complete(date_time = seq(min(date_time), max(date_time), by = "1 day"))
 ```
 
 ```{r}
-ggplot(kalauhaihai_pH, aes(x = date_time, y = pH)) +
-         geom_line()
+ph <- ggplot(kalauhaihai_pH, aes(x = date_time, y = pH)) +
+         geom_line(color = "royalblue")
+
+ggplotly(ph)
 ```
 
 
@@ -237,12 +248,15 @@ ggplotly(all_conductivity_density)
 
 ```{r}
 conductivity_plot <- ggplot(all_data_distinct_wider, aes(x = date_time, y = high_range_microSiemens, color = site)) +
-  geom_point(size = 0.5) +
+  geom_line(size = 0.5) +
   facet_wrap(~site, scales = "free") +
   theme_minimal()
 #ggplotly(conductivity_plot)
 conductivity_plot
+
+ggplotly(conductivity_plot)
 ```
+
 
 
 histogram by month
