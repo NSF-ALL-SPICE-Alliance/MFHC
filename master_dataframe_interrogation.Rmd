@@ -126,11 +126,12 @@ ggplotly(all_temp_density)
 
 ```{r}
 all_temp_line <- ggplot(all_data_distinct_wider, aes(x = date_time, y = temp_celsius, color = site)) +
-  geom_point(size = 0.2) +
+  #geom_point(size = 0.2) +
+  geom_line() +
   facet_wrap(~site_specific, scales = "free") +
   theme_minimal()
-#ggplotly(all_temp_line)
-all_temp_line
+ggplotly(all_temp_line)
+#all_temp_line
 ```
 
 
