@@ -1,0 +1,32 @@
+---
+title: "Maunalus Fishpond Heritage Center Data Dashboard (Beta)"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    social: menu
+    source_code: embed
+    theme: yeti
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(flexdashboard)
+library(tidyverse)
+library(here)
+library(plotly)
+```
+
+```{r}
+all_data <- read_csv(here("cleaned_data/master_dataframe_distinct.csv"))
+```
+
+```{r}
+all_data_gaps <- all_data %>% 
+  seq(
+  from = min(date_time),
+  to = max(date_time),
+  by = "10 mins"  # Adjust this to the desired time interval
+)
+```
+
