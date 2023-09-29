@@ -52,3 +52,7 @@ ggplot(pH, aes(x = pH, fill = site)) +
 ```
 
 
+```{r}
+write_csv(all_data_distinct_seq_wider, here("cleaned_data/all_data_distinct_seq_wider.csv"))
+```
+

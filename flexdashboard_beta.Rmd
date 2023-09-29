@@ -18,15 +18,8 @@ library(plotly)
 ```
 
 ```{r}
-all_data <- read_csv(here("cleaned_data/master_dataframe_distinct.csv"))
+all_data <- read_csv(here("cleaned_data/all_data_distinct_seq_wider"))
 ```
 
-```{r}
-all_data_gaps <- all_data %>% 
-  seq(
-  from = min(date_time),
-  to = max(date_time),
-  by = "10 mins"  # Adjust this to the desired time interval
-)
-```
+
 
