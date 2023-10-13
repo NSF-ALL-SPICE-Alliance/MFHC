@@ -166,6 +166,10 @@ conductivity_joined <- conductivity_joined %>%
                values_to = "value")
 ```
 
+```{r}
+conductivity_joined <- conductivity_joined %>% 
+filter(variable != "temp_celsius")
+```
 
 Write csv into cleaned_conductivity folder
 

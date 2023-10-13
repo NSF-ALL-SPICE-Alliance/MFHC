@@ -37,7 +37,7 @@ ggplot(all_data_distinct_seq_wider, aes(y = temp_celsius, x = date_time)) +
 
 ```{r}
 ggplot(all_data_distinct_seq_wider, aes(y = pH, x = date_time)) +
-  geom_line() +
+  geom_point() +
   facet_wrap(~site, scales = "free", ncol = 1)
 ```
 

@@ -152,6 +152,11 @@ pH_joined <- pH_joined %>%
                values_to = "value")
 ```
 
+```{r}
+pH_joined <- pH_joined %>% 
+filter(variable == "pH")
+```
+
 # Write csv into cleaned_conductivity folder
 
 ```{r}

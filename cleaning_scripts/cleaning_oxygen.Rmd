@@ -169,6 +169,10 @@ oxygen_joined <- oxygen_joined %>%
                values_to = "value")
 ```
 
+```{r}
+oxygen_joined <- oxygen_joined %>% 
+filter(variable != "temp_celsius")
+```
 
 # Write csv into cleaned_conductivity folder
 
