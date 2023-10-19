@@ -1,0 +1,180 @@
+---
+title: "dygraphs"
+author: "Connor Flynn"
+date: "9/15/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(naniar)
+library(here)
+library(dygraphs)
+library(xts)
+```
+
+
+
+<!-- ```{r} -->
+<!-- all_data <- read_csv(here("cleaned_data/master_dataframe.csv")) -->
+<!-- ``` -->
+<!-- Change NA to "None" for Kanewai or Kaluahaihai measurements that don't have a site_specific location -->
+
+<!-- ```{r} -->
+<!-- all_data <- all_data %>% -->
+<!--   mutate(site_specific = case_when( -->
+<!--     is.na(site_specific) ~ "none", -->
+<!--     TRUE ~ site_specific -->
+<!--   )) -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- table(all_data$site_specific) -->
+<!-- ``` -->
+
+
+
+<!-- ```{r} -->
+<!-- sum(is.na(all_data)) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- gg_miss_var(all_data) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- all_data <- drop_na(all_data) -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- sum(is.na(all_data)) -->
+<!-- ``` -->
+
+<!-- Check duplicated rows -->
+<!-- - All monitors also measure temp so there are duplicates for same variable, place, time -->
+
+<!-- ```{r} -->
+<!--  all_data %>% -->
+<!--     dplyr::group_by(date_time, site, site_specific, variable, value) %>% -->
+<!--     dplyr::summarise(n = dplyr::n(), .groups = "drop") %>% -->
+<!--     dplyr::filter(n > 1L) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- all_data_distinct <- distinct(all_data) -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!--  all_data_distinct %>% -->
+<!--     dplyr::group_by(date_time, site, site_specific, variable) %>% -->
+<!--     dplyr::summarise(n = dplyr::n(), .groups = "drop") %>% -->
+<!--     dplyr::filter(n > 1L) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- table(all_data_distinct$site_specific) -->
+<!-- ``` -->
+
+
+
+
+<!-- ```{r} -->
+<!-- all_data_distinct_wider <- all_data_distinct %>%  -->
+<!--   pivot_wider(names_from = "variable", -->
+<!--               values_from = "value", -->
+<!--               values_fn = mean) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- table(all_data_distinct_wider$site_specific) -->
+<!-- ``` -->
+
+
+
+Dygraphs
+
+
+
+
+```{r}
+temp_data <- all_data_distinct_wider %>% 
+  select(date_time, site, site_specific, temp_celsius)
+```
+
+```{r}
+temp_data <- temp_data %>% 
+  filter(site == "Kalauhaihai" & site_specific == "Auwai")
+```
+
+```{r}
+temp_data <- temp_data %>% 
+  select(date_time, temp_celsius)
+```
+
+```{r}
+
+# Syntax rename with condition
+colnames(temp_data)[colnames(temp_data) == "temp_celsius"] ="value"
+colnames(temp_data)[colnames(temp_data) == "date_time"] ="time"
+
+```
+
+
+```{r}
+# Assuming your data is in a dataframe called temp_data
+temp_data <- data.frame(
+  time = as.POSIXct(temp_data$time),
+  value = temp_data$value
+)
+
+# Convert to an xts object
+temp_data_xts <- xts(temp_data$value, order.by = temp_data$time)
+
+```
+
+
+```{r}
+# Create a complete time sequence with gaps
+all_times <- seq(
+  from = min(temp_data$time),
+  to = max(temp_data$time),
+  by = "10 mins"  # Adjust this to the desired time interval
+)
+
+# Merge the complete time sequence with your data
+complete_data <- merge(xts(temp_data$value, order.by = temp_data$time), xts(, order.by = all_times))
+
+# Create a dygraph with gaps
+dy <- dygraph(complete_data) %>%
+  dyOptions(drawGapEdge = TRUE)
+dy
+```
+
+
+
+
+Plane Coding 
+
+```{r}
+all_data <- read_csv(here("cleaned_data/all_data_distinct_seq_wider.csv"))
+```
+
+
+```{r}
+ph_data <- all_data %>% 
+  filter(site == "Kanewai") %>% 
+  select(date_time, pH) 
+```
+
+```{r}
+ph_data_xts <- xts(ph_data$pH, order.by = ph_data$date_time)
+```
+
+```{r}
+dy <- dygraph(ph_data_xts) %>%
+  dyOptions(drawGapEdge = TRUE)
+dy
+```
+

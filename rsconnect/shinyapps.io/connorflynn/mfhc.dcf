@@ -1,0 +1,10 @@
+name: mfhc
+title:
+username: connorflynn
+account: connorflynn
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10240691
+bundleId: 7822072
+url: https://connorflynn.shinyapps.io/mfhc/
+version: 1

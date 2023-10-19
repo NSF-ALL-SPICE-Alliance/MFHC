@@ -1,0 +1,73 @@
+---
+title: "NA Spaces"
+author: "Connor Flynn"
+date: "9/22/2023"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(naniar)
+library(here)
+library(plotly)
+options(scipen = 999)
+```
+
+```{r warning=FALSE}
+all_data_distinct <- read_csv(here("cleaned_data/master_dataframe_distinct.csv"))
+```
+
+```{r warning=FALSE}
+all_data_distinct_seq <- all_data_distinct %>%
+  group_by(site, variable, site_specific) %>% 
+  complete(date_time = seq(min(date_time), max(date_time), by = "10 mins"))
+```
+```{r}
+all_data_distinct_seq_wider <- all_data_distinct_seq %>% 
+  pivot_wider(names_from = "variable", values_from = "value", values_fn = mean)
+```
+
+```{r}
+a <- ggplot(all_data_distinct_seq_wider, aes(y = temp_celsius, x = date_time, color = site)) +
+  geom_line() +
+  facet_wrap(~site_specific, scales = "free")
+ggplotly(a)
+```
+
+```{r}
+glimpse(all_data_distinct_seq_wider)
+
+
+a <- ggplot(all_data_distinct_seq_wider, aes(y = pH, x = date_time, color = site)) +
+  geom_line() +
+  theme_bw()
+  #facet_wrap(~site, scales = "free", ncol = 1)
+
+ggplotly(a)
+
+pH <- all_data_distinct_seq_wider %>% 
+  select(date_time, site, pH) 
+
+
+ggplot(pH, aes(x = date_time, y = pH, color = site)) +
+  geom_line(na.rm = FALSE)
+
+```
+
+```{r}
+pH <- all_data_distinct_seq_wider %>% 
+  select(date_time, pH, site, site_specific)
+```
+
+```{r}
+ggplot(pH, aes(x = pH, fill = site)) +
+  geom_histogram(color = "black")
+```
+
+
+```{r}
+write_csv(all_data_distinct_seq_wider, here("cleaned_data/all_data_distinct_seq_wider.csv"))
+```
+

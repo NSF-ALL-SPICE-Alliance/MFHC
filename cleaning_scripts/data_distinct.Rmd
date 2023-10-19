@@ -1,0 +1,80 @@
+---
+title: "Distinct Data"
+author: "Connor Flynn"
+date: "9/22/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(naniar)
+library(here)
+library(plotly)
+options(scipen = 999)
+```
+
+
+```{r}
+all_data <- read_csv(here("cleaned_data/master_dataframe.csv"))
+```
+Change NA to "None" for Kanewai or Kaluahaihai measurements that don't have a site_specific location
+
+```{r}
+all_data <- all_data %>%
+  mutate(site_specific = case_when(
+    is.na(site_specific) ~ "none",
+    TRUE ~ site_specific
+  ))
+```
+
+
+```{r}
+table(all_data$site_specific)
+```
+
+
+
+```{r}
+sum(is.na(all_data))
+```
+
+```{r}
+gg_miss_var(all_data)
+```
+```{r}
+all_data <- drop_na(all_data)
+```
+
+
+```{r}
+sum(is.na(all_data))
+```
+
+Check duplicated rows
+- All monitors also measure temp so there are duplicates for same variable, place, time
+
+```{r}
+ all_data %>%
+    dplyr::group_by(date_time, site, site_specific, variable, value) %>%
+    dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+    dplyr::filter(n > 1L)
+```
+
+```{r}
+all_data_distinct <- distinct(all_data)
+```
+
+
+```{r}
+ all_data_distinct %>%
+    dplyr::group_by(date_time, site, site_specific, variable) %>%
+    dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+    dplyr::filter(n > 1L)
+```
+```{r}
+table(all_data_distinct$site_specific)
+```
+```{r}
+write_csv(all_data_distinct, here("cleaned_data/master_dataframe_distinct.csv"))
+```

@@ -140,7 +140,7 @@ data_conductivity_FebApr2023_Kalauhaihai <- data_conductivity_FebApr2023_Kalauha
 
 
 data_conductivity_FebApr2023_Kanewai <- data_conductivity_FebApr2023_Kanewai %>% 
-  filter(date_time >= "2023-02-09 00:00:00" & date_time <= "2023-04-05 00:00:00")
+  filter(date_time >= "2023-02-10 00:00:00" & date_time <= "2023-04-05 00:00:00")
 
 data_conductivity_OctNov2022_Kalauhaihai <- data_conductivity_OctNov2022_Kalauhaihai %>% 
   filter(date_time >= "2022-10-06 10:10:00" & date_time <= "2022-11-09 09:30:00")
