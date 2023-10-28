@@ -120,7 +120,7 @@ output$plot3 <- renderPlotly({
   ggplotly(
     ggplot(kalauhaihai_temp, aes(date_time, value, color = site_specific)) +
       geom_line() +
-      facet_wrap(~site_specific) +
+      facet_wrap(~site_specific, scales = "free_x") +
       theme_minimal() +
       labs(x = "Date Time", y = "Temperature (°C)")
   )
