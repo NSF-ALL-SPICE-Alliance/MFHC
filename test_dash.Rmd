@@ -6,7 +6,10 @@ output:
     vertical_layout: scroll
     social: menu
     source_code: embed
-    theme: yeti
+    theme:
+      bg: "black"
+      fg: "white"
+      primary: "#c6a668" #MFCH theme color
 runtime: shiny
 ---
 
@@ -18,6 +21,7 @@ library(here)
 library(plotly)
 library(shiny)
 library(rsconnect)
+library(bslib) #custom theme
 
 options(scipen = 99)
 ```
@@ -38,8 +42,8 @@ unique_variable <- unique(all_data$variable)
 
 
 ```{r echo=FALSE}
-selectInput("Select_Variable", label = "Select Variable", choices = unique_variable)
-selectInput("Select_Site", label = "Select Site", choices = unique_site)
+selectInput("Select_Variable", label = "Select Variable", choices = unique_variable, selected = "pH")
+selectInput("Select_Site", label = "Select Site", choices = unique_site, selected = "Kanewai")
 selectInput("Select_Site_Specific", label = "Select Specific Site", choices = unique_site_specific)
 ```
 
@@ -57,33 +61,40 @@ filtered_data <- reactive({
 Row
 ---------------------------------------------------------
 
-
 ```{r echo=FALSE}
 output$plot <- renderPlotly({
-  ggplotly(
-    ggplot(filtered_data(), aes(date_time, value)) +
-      geom_line(color = "steelblue") +
+  a <- ggplot(filtered_data(), aes(date_time, value)) +
+      geom_line(color = "mediumaquamarine") +
       labs(x = "Date Time", y = paste(input$Select_Variable), title = paste(input$Select_Variable)
  ) +
       theme_minimal() 
-  )
+ if(input$Select_Variable == "dissolved_oxygen_mg_l") {
+  a <- a + geom_hline(yintercept = 2, linetype = "dashed", color = "red", size = 0.5) +
+    annotate(geom="text",x = as.POSIXct("2023-02-18 21:10:00"), y = 2.5, label = "hypoxic", colour = "red")
+ }
+  ggplotly(a)
 })
 
 plotlyOutput("plot")
 
+
+
 ```
-
-
 
 Kanewai Temperature
 =========================================================
 
+<div style="text-align:center;">
+  <img src="mfch_kanewai.jpg" alt="Kanewai Spring" style="width: 1200px; height: 700px;"/>
+</div>
+
+Row
+---------------------------------------------------------
 
 ```{r echo=FALSE}
 kanewai_temp <- all_data %>% 
   filter(site == "Kanewai" & variable == "temp_celsius")
 ```
-
 
 
 
@@ -106,6 +117,12 @@ plotlyOutput("plot2")
 Kalauhaihai Temperature
 =========================================================
 
+<div style="text-align:center;">
+  <img src="Kalauhaihai_Aerial.jpg" alt="Kaluhaihai Pond" style="width: 1200px; height: 700px;" />
+</div>
+
+Row
+---------------------------------------------------------
 
 ```{r echo=FALSE}
 kalauhaihai_temp <- all_data %>% 
@@ -132,7 +149,12 @@ plotlyOutput("plot3")
 
 Variable Interactions
 =========================================================
+<div style="text-align:center;">
+  <img src="mfch_horses.jpg" alt="MFCH Horses" style="width: 1200px; height: 700px;" />
+</div>
 
+Row
+---------------------------------------------------------
 
 ```{r echo=FALSE}
 unique_site <- unique(all_data$site)
@@ -155,9 +177,6 @@ filtered_interactive_data <- reactive({
     filter(variable == input$Select_Variable1 | variable == input$Select_Variable2,)
 })
 ```
-
-
-
 
 
 ```{r echo=FALSE}
