@@ -166,7 +166,7 @@ unique_variable2 <- unique(all_data$variable)
 ```{r echo=FALSE}
 selectInput("Select_Variable1", label = "Select Variable 1", choices = unique_variable1)
 selectInput("Select_Variable2", label = "Select Variable 2", choices = unique_variable2)
-#selectInput("Select_Site", label = "Select Site", choices = unique_site)
+selectInput("Select_Site", label = "Select Site", choices = unique_site)
 
 ```
 
@@ -174,7 +174,9 @@ selectInput("Select_Variable2", label = "Select Variable 2", choices = unique_va
 ```{r echo=FALSE}
 filtered_interactive_data <- reactive({
   all_data %>% 
-    filter(variable == input$Select_Variable1 | variable == input$Select_Variable2,)
+    filter(variable == input$Select_Variable1 | 
+           variable == input$Select_Variable2,
+           site == input$Select_Site)
 })
 ```
 
@@ -191,6 +193,7 @@ output$plot4 <- renderPlotly({
 
 plotlyOutput("plot4")
 ```
+
 
 
 
