@@ -193,9 +193,22 @@ backup_data$high_range_microSiemens <- as.numeric(backup_data$high_range_microSi
 # Plot the data
 ggplot(backup_data, aes(x = high_range_microSiemens, y = pH, color=site)) +
   geom_point() +
-  labs(title = "high range microSiemnes and pH comparison", x = "high range microSiemnes", y = "pH") +
+  stat_cor() +
+  labs(title = "Electrical conductivity and pH", subtitle= "February to April 2023", x = "high range microSiemens", y = "pH") +
   theme_minimal()
 ```
+
+```{r}
+backup_noNA <- backup_data %>% 
+  filter(!is.na(pH) & !is.na(high_range_microSiemens))
+```
+
+
+```{r}
+ggplot(data=backup_noNA, aes(x=date_time, y=high_range_microSiemens, color=site))+
+  geom_line()
+```
+
 
 ```{r}
 ggplot(data = backup_data, aes(x = pH, fill = site)) +
@@ -305,6 +318,14 @@ ggplot(melted_data, aes(x = value)) +
 
 
 ```{r}
+# Convert NULL entries to NA for all columns
+backup_data <- replace(backup_data, is.null(backup_data), NA)
+```
+
+
+
+
+```{r}
 library(ggplot2)
 library(reshape2)
 
@@ -332,11 +353,34 @@ ggplot(melted_data, aes(x = value)) +
 ```
 
 
+```{r}
+library(purrr)
+library(ggpubr)
+
+# Assuming 'low_range_microSiemens' column contains lists with single numeric values
+backup_data$dissolved_oxygen_mg_l <- map_dbl(backup_data$dissolved_oxygen_mg_l, ~safe_extract(.x))
+
+# Now, convert to numeric
+backup_data$dissolved_oxygen_mg_l <- as.numeric(backup_data$dissolved_oxygen_mg_l)
+
+# Plot the data
+ggplot(backup_data, aes(x = dissolved_oxygen_mg_l, y = pH, color=site)) +
+  geom_point(size=1) +
+  stat_cor() + 
+  labs(title = "dissovled oxygen and pH comparison", subtitle="February to April 2023", x = "dissolved oxygen mg per litre", y = "pH") +
+  theme_minimal()
+```
+
+```{r}
+backup_noNA <- backup_data %>% 
+  filter(!is.na(pH) & !is.na(dissolved_oxygen_mg_l))
+```
 
 
-
-
-
+```{r}
+ggplot(data=backup_noNA, aes(x=date_time, y=pH, color=site))+
+  geom_line()
+```
 
 
 
