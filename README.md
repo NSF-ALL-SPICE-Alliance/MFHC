@@ -1,10 +1,10 @@
 # Welcome to our Maunalua Fishpond Heritage Center Dashboard and Analysis Repository!
 
-<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/79951e4f-d012-47aa-b917-e1aea2179957" alt="SpiceLogo1" width="400" height="150">
+<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/79951e4f-d012-47aa-b917-e1aea2179957" alt="SpiceLogo1" width="200" height="75">
 
-<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/103060ad-2896-45b4-bf2d-06bec3d8119f" alt="mfhc" width="300" height="200">
+<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/103060ad-2896-45b4-bf2d-06bec3d8119f" alt="mfhc" width="150" height="100">
 
-<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/a2fc9fd6-ea5a-4e7d-ad61-52f3d0951dd6" alt="cuh_logo" width="250" height="200">
+<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/a2fc9fd6-ea5a-4e7d-ad61-52f3d0951dd6" alt="cuh_logo" width="125" height="100">
 
 
 ### About
@@ -35,14 +35,18 @@ The primary product is a Shiny Dashboard that displays pH, oxygen, conductivity,
 [Connor Flynn](https://github.com/ConnorFlynn)
 
 
-<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/a90e82e6-e249-4f73-afac-ad36c1d36c16" alt="Kanewai History w Uncle Chris" width="300" height="200">
+<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/1a3799c5-3501-4702-bf05-ef731d2ad1f7" alt="team_bridge" width="300" height="250">
 
+<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/c4a99b0e-744f-41fd-b0be-c818e528cf23" alt="chris_teaching" width="300" height="250">
 
-<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/86409f9e-81f9-4188-b52d-4d6e2e0557b7" alt="anson_pres_photo" width="300" height="200">
+<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/86409f9e-81f9-4188-b52d-4d6e2e0557b7" alt="anson_pres_photo" width="300" height="250">
 
-<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/e220ca48-b1dd-4448-b363-7d4944c5166c" alt="anson_aag_globe" width="300" height="200">
+<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/e220ca48-b1dd-4448-b363-7d4944c5166c" alt="anson_aag_globe" width="300" height="250">
 
-<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/ab8a56ff-6241-40f9-b8c3-2b3486398d29" alt="brandon_pres_photo" width="300" height="200">
+<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/ab8a56ff-6241-40f9-b8c3-2b3486398d29" alt="brandon_pres_photo" width="300" height="250">
+
+<img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/b37be1fc-44e8-4887-8c9e-4a60d80adb68" alt="spring" width="300" height="250">
+
 
 
 
