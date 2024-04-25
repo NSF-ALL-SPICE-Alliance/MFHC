@@ -1,0 +1,68 @@
+---
+title: "Can we For Loop!?"
+author: "Connor Flynn"
+date: "4/25/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+
+
+```{r}
+
+# Set the working directory to the project root folder
+here::set_here()
+
+# Define the path to the raw data folder
+raw_data_folder <- here("raw_data", "raw_pH")
+
+# Get the list of files in the raw_pH folder
+file_list <- list.files(path = raw_data_folder, full.names = TRUE)
+
+# Define a function to read and clean the column names
+read_and_clean_data <- function(file_path) {
+  # Check if file is .csv or .txt
+  file_ext <- tools::file_ext(file_path)
+  
+  # Read the file based on the extension
+  if (file_ext == "csv") {
+    data <- read_csv(file_path)
+  } else if (file_ext == "txt") {
+    data <- read_tsv(file_path)
+  } else {
+    stop("Unsupported file format")
+  }
+  
+  # Clean column names using janitor's clean_names()
+  data <- data %>% clean_names()
+  
+  return(data)
+}
+
+# Initialize empty data frames for each file
+df1 <- df2 <- df3 <- df4 <- data.frame()
+
+# Loop through each file, read, and clean the data
+for (i in seq_along(file_list)) {
+  data <- read_and_clean_data(file_list[i])
+  
+  # Merge date and time columns into a single datetime column
+  if ("date" %in% colnames(data) && "time" %in% colnames(data)) {
+    data <- data %>%
+      mutate(datetime = as.POSIXct(paste(date, time), format = "%Y-%m-%d %H:%M:%S"))
+  }
+  
+  # Assign each dataframe to a variable based on file index
+  assign(paste0("df", i), data)
+}
+
+# Now you have df1, df2, df3, and df4 dataframes with merged datetime column
+
+
+```
