@@ -382,8 +382,61 @@ ggplot(data=backup_noNA, aes(x=date_time, y=pH, color=site))+
   geom_line()
 ```
 
+```{r}
+Tide_data_feb_23<-read.csv(here("Tide_data/Tide_hnl_feb_2023.csv"))
+```
 
 
+combine date and time column from tide data, change the name of the new column date and time to date_time, then use the left join function and join by date time, from there it should be every half hour
 
+```{r}
+# Create a deep copy of the data frame
+backup_tide_data <- Tide_data_feb_23
+```
+
+```{r}
+# Delete the data frame
+rm(backup_tide_data)
+```
+```{r}
+backup_tide_data$date_time <- as.POSIXct(paste(backup_tide_data$Date, backup_tide_data$Time..GMT.), format = "%Y/%m/%d %H:%M")
+```
+
+
+```{r}
+library(dplyr)
+
+backup_tide_data <- backup_tide_data %>%
+  select(-Date, -Time..GMT.)
+
+```
+
+
+```{r}
+# Move the "date_time" column to the first position
+backup_tide_data <- backup_tide_data %>%
+  select(date_time, everything())
+```
+
+```{r}
+backup_tide_data <- backup_tide_data %>%
+  filter(minute(date_time) %% 30 == 0)
+```
+
+```{r}
+#Perform a left join between backup_tide_data and backup_data by "data_time"
+joined_data <- left_join(backup_tide_data, backup_data, by = "date_time")
+```
+
+
+```{r}
+ggplot(joined_data, aes(x=date_time, y=Verified..ft.))+
+  geom_line()
+```
+
+```{r}
+ggplot(joined_data, aes(x=dissolved_oxygen_mg_l, y=Verified..ft., color=site))+
+  geom_point()+geom_smooth()+facet_wrap(~site, scale="free_x")
+```
 
 
