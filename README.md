@@ -35,6 +35,10 @@ The primary product is a Shiny Dashboard that displays pH, oxygen, conductivity,
 [Connor Flynn](https://github.com/ConnorFlynn)
 
 
+![anson_gif](https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/ec7c1917-672c-4071-b319-eeb4f2ffade8)
+
+
+
 <img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/1a3799c5-3501-4702-bf05-ef731d2ad1f7" alt="team_bridge" width="300" height="250">
 
 <img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/c4a99b0e-744f-41fd-b0be-c818e528cf23" alt="chris_teaching" width="300" height="250">
