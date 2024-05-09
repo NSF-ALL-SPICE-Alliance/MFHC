@@ -190,15 +190,14 @@ for (i in seq_along(file_list)) {
   # Change columns containing "p_h" in their names to "ph_level"
   ph_columns <- grep("p_h", colnames(data), ignore.case = TRUE)
   if (length(ph_columns) > 0) {
-    colnames(data)[ph_columns] <- "ph_level"
+    colnames(data)[ph_columns] <- "pH"
   }
 
   # Merge date and time columns into a single datetime column
   if ("date_time_hst" %in% colnames(data) && "time" %in% colnames(data)) {
     data <- data %>%
-      mutate(date_time_hst = as.POSIXct(paste(date_time_hst, time), format = "%Y-%m-%d %H:%M:%S"))
+      mutate(date_time_hst = as.POSIXct(paste(date_time_hst, time), format = "%d-%m-%y %H:%M:%S"))
   }
-  
   
   
   # Set the class of "date_time_hst" column to POSIXct with the specified format
@@ -216,7 +215,9 @@ for (i in seq_along(file_list)) {
 # Assign data to respective data frames (df1, df2, df3, df4)
 assign(paste0("df", i), data)
 
-# Now you have df1, df2, df3, and df4 dataframes with merged datetime column
+# Combine all dataframes into one dataframe and select only the required columns
+pH_joined <- bind_rows(df1, df2, df3, df4) %>%
+  select(date_time_hst, pH)
 
 ```
 
