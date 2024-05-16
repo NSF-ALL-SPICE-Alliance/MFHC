@@ -109,16 +109,96 @@ pH_joined <- bind_rows(df1, df2, df3, df4, df5) %>%
 
 ```
 
+```{r}
+# Loop through each file, read, and clean the data
+for (i in seq_along(file_list)) {
+  data <- read_and_clean_data(file_list[i])
+  
+  # Extract site information from file name
+  if (grepl("kalauhaihai", file_list[i])) {
+    data$site <- "kalauhaihai"
+  } else if (grepl("kanewai", file_list[i])) {
+    data$site <- "kanewai"
+  }
+  
+  # Change columns containing "date" in their names to "date_time_hst"
+  date_columns <- grep("date", colnames(data), ignore.case = TRUE)
+  if (length(date_columns) > 0) {
+    colnames(data)[date_columns] <- "date_time_hst"
+  }
+  
+  # Change columns containing "p_h" in their names to "pH"
+  ph_columns <- grep("p_h", colnames(data), ignore.case = TRUE)
+  if (length(ph_columns) > 0) {
+    colnames(data)[ph_columns] <- "pH"
+  }
 
+  # Merge date and time columns into a single datetime column
+  if ("date_time_hst" %in% colnames(data) && "time" %in% colnames(data)) {
+    data <- data %>%
+      mutate(date_time_hst = as.POSIXct(paste(date_time_hst, time), format = "%d-%m-%y %H:%M:%S"))
+  }
+  
+  # Set the class of "date_time_hst" column to POSIXct with the specified format
+  if ("date_time_hst" %in% colnames(data)) {
+    date_format <- c("%m/%d/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S %Z")
+    for (format in date_format) {
+      data$date_time_hst <- as.POSIXct(data$date_time_hst, format = format, tz = "UTC", tryFormats = c(format))
+    }
+  }
+  
+  # Assign each dataframe to a variable based on file index
+  assign(paste0("df", i), data)
+}
+
+# Combine all dataframes into one dataframe
+pH_joined <- bind_rows(df1, df2, df3, df4, df5) %>% 
+  select(date_time_hst, pH)
+```
+
+```{r}
+# Trimming
+df5 <- 
+  df5 %>% 
+  filter(date_time_hst >= "2022-10-07 10:10:00" & date_time_hst <= "2022-11-09 9:30:00")
+
+df2 <-
+  df2 %>% 
+  filter(date_time_hst >= "2023-02-16 9:52:00" & date_time_hst <= "2023-04-05 09:35:00")
+
+df3 <-
+  df3 %>% 
+  filter(date_time_hst >= "2023-02-09 9:52:00" & date_time_hst <= "2023-04-05 10:15:00")
+
+df1 <-
+  df1 %>% 
+  filter(date_time_hst >= "2022-04-09 15:10:00" & date_time_hst <= "2022-04-19 09:30:00")
+
+df4 <-
+  df4 %>% 
+  filter(date_time_hst >= "2023-07-12 16:40:00" & date_time_hst <= "2023-09-17 13:25:00")
+
+```
+
+```{r}
+# join
+pH_joined <- bind_rows(df1, df2, df3, df4, df5) %>% 
+  select(date_time_hst, pH)
+
+# Add site specefic locations
+pH_joined$site <- c(rep("kalauhaihai", nrow(df1)), rep("kalauhaihai", nrow(df2)), rep("kanewai", nrow(df3)), rep("kalauhaihai", nrow(df4)), rep("kalauhaihai", nrow(df5)))
+
+# Select only the required columns
+pH_joined <- pH_joined[, c("date_time_hst", "pH", "site")]
+```
 
 ```{r}
 a <- ggplot(pH_joined, aes(x = date_time_hst, 
-                      y = pH)) +
+                      y = pH, color = site)) +
   geom_line()
 
 ggplotly(a)
 ```
-
 Notes:
 
 - Maybe leave out df1 because it's only 2 weeks of data with major gap until next hobo deployed
@@ -133,4 +213,20 @@ Trimming
 Kalauhaihai July - Sept 2023
 - 7/12/2023 16:40:00
 - 9/18/2023 13:25:00
+
+Kalauhaihai Oct-Nov 2022
+- 10/6/2022 10:10:00
+- 11/10/2022 9:30:00
+
+Kalauhaihai Feb-April 2023
+- 2/16/2023 9:52:00
+- 4/6/2023 9:35:00
+
+Kanewai Feb-April 2023
+- 2/9/2023 10:13:00
+- 4/6/2023 10:15:00
+
+
+
+
 
