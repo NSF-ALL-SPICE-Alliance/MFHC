@@ -15,7 +15,8 @@ library(plotly)
 
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
 # Set the working directory to the project root folder
 here::set_here()
 
@@ -62,63 +63,16 @@ read_and_clean_data <- function(file_path) {
   return(data)
 }
 
-#Initialize empty data frames for each file
-df1 <- df2 <- df3 <- df4 <- data.frame()
 
-# Loop through each file, read, and clean the data
-for (i in seq_along(file_list)) {
-  data <- read_and_clean_data(file_list[i])
-  
-  # Change columns containing "date" in their names to "date_time_hst"
-  date_columns <- grep("date", colnames(data), ignore.case = TRUE)
-  if (length(date_columns) > 0) {
-    colnames(data)[date_columns] <- "date_time_hst"
-  }
-  
-  # Change columns containing "p_h" in their names to "ph_level"
-  ph_columns <- grep("p_h", colnames(data), ignore.case = TRUE)
-  if (length(ph_columns) > 0) {
-    colnames(data)[ph_columns] <- "pH"
-  }
-
-  # Merge date and time columns into a single datetime column
-  if ("date_time_hst" %in% colnames(data) && "time" %in% colnames(data)) {
-    data <- data %>%
-      mutate(date_time_hst = as.POSIXct(paste(date_time_hst, time), format = "%d-%m-%y %H:%M:%S"))
-  }
-  
-  
-  # Set the class of "date_time_hst" column to POSIXct with the specified format
-  if ("date_time_hst" %in% colnames(data)) {
-    date_format <- c("%m/%d/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S %Z")
-    for (format in date_format) {
-      data$date_time_hst <- as.POSIXct(data$date_time_hst, format = format, tz = "UTC", tryFormats = c(format))
-    }
-  }
-  
-  # Assign each dataframe to a variable based on file index
-  assign(paste0("df", i), data)
-}
-
-# Assign data to respective data frames (df1, df2, df3, df4)
-assign(paste0("df", i), data)
-
-# Combine all dataframes into one dataframe and select only the required columns
-pH_joined <- bind_rows(df1, df2, df3, df4, df5) %>%
-  select(date_time_hst, pH)
-
-```
-
-```{r}
 # Loop through each file, read, and clean the data
 for (i in seq_along(file_list)) {
   data <- read_and_clean_data(file_list[i])
   
   # Extract site information from file name
-  if (grepl("kalauhaihai", file_list[i])) {
-    data$site <- "kalauhaihai"
-  } else if (grepl("kanewai", file_list[i])) {
-    data$site <- "kanewai"
+  if (grepl("Kalauhaihai", file_list[i])) {
+    data$site <- "Kalauhaihai"
+  } else if (grepl("Kanewai", file_list[i])) {
+    data$site <- "Kanewai"
   }
   
   # Change columns containing "date" in their names to "date_time_hst"
@@ -151,9 +105,7 @@ for (i in seq_along(file_list)) {
   assign(paste0("df", i), data)
 }
 
-# Combine all dataframes into one dataframe
-pH_joined <- bind_rows(df1, df2, df3, df4, df5) %>% 
-  select(date_time_hst, pH)
+
 ```
 
 ```{r}
@@ -183,19 +135,16 @@ df4 <-
 ```{r}
 # join
 pH_joined <- bind_rows(df1, df2, df3, df4, df5) %>% 
-  select(date_time_hst, pH)
+  select(date_time_hst, pH, site)
 
-# Add site specefic locations
-pH_joined$site <- c(rep("kalauhaihai", nrow(df1)), rep("kalauhaihai", nrow(df2)), rep("kanewai", nrow(df3)), rep("kalauhaihai", nrow(df4)), rep("kalauhaihai", nrow(df5)))
 
-# Select only the required columns
-pH_joined <- pH_joined[, c("date_time_hst", "pH", "site")]
 ```
 
 ```{r}
 a <- ggplot(pH_joined, aes(x = date_time_hst, 
                       y = pH, color = site)) +
-  geom_line()
+  geom_line(size = 0.1) +
+  theme_minimal()
 
 ggplotly(a)
 ```
