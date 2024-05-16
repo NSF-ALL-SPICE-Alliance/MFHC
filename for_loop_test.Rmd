@@ -10,120 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(janitor)
+library(plotly)
 ```
-
-
-
-```{r eval=FALSE, include=FALSE}
-# Set the working directory to the project root folder
-here::set_here()
-
-# Define the path to the raw data folder
-raw_data_folder <- here("raw_data", "raw_pH")
-
-# Get the list of files in the raw_pH folder
-file_list <- list.files(path = raw_data_folder, full.names = TRUE)
-
-# Define a function to read and clean the column names
-read_and_clean_data <- function(file_path) {
-  # Check if file is .csv or .txt
-  file_ext <- tools::file_ext(file_path)
-  
-  # Read the file based on the extension
-  if (file_ext == "csv") {
-    data <- read_csv(file_path)
-  } else if (file_ext == "txt") {
-    data <- read_tsv(file_path)
-  } else {
-    stop("Unsupported file format")
-  }
-
-  if (file_ext == "csv") {
-  data <- read_csv(file_path)
-} else if (file_ext == "txt") {
-  # Read the first line to check if it starts with "Serial"
-  first_line <- readLines(file_path, n = 1)
-
-  if (startsWith(first_line, "Serial")) {
-    data <- read_tsv(file_path, skip = 1)
-  } else {
-    data <- read_tsv(file_path)
-  }
-} else {
-  stop("Unsupported file format")
-}
-
-
-
-  # Clean column names using janitor's clean_names()
-  data <- data %>% clean_names()
-
-  return(data)
-}
-
-# Initialize empty data frames for each file
-# df1 <- df2 <- df3 <- df4 <- data.frame()
-# 
-# # Loop through each file, read, and clean the data
-# for (i in seq_along(file_list)) {
-#   data <- read_and_clean_data(file_list[i])
-# 
-#   # Merge date and time columns into a single datetime column
-#   if ("date" %in% colnames(data) && "time" %in% colnames(data)) {
-#     data <- data %>%
-#       mutate(datetime = as.POSIXct(paste(date, time), format = "%Y-%m-%d %H:%M:%S"))
-#   }
-# 
-# 
-# 
-# 
-#   # Assign each dataframe to a variable based on file index
-#   assign(paste0("df", i), data)
-# }
-# 
-#   
-#   # Assign data to respective data frames (df1, df2, df3, df4)
-#   assign(paste0("df", i), data)
-# }
-
-df1 <- df2 <- df3 <- df4 <- data.frame()
-
-# Loop through each file, read, and clean the data
-for (i in seq_along(file_list)) {
-  data <- read_and_clean_data(file_list[i])
-
-  #Merge date and time columns into a single datetime column
-  if ("date" %in% colnames(data) && "time" %in% colnames(data)) {
-    data <- data %>%
-      unite(date_time_hst, date, time, sep = " ") %>%
-      mutate(date_time_hst = as.POSIXctformat(data$date_time_hst = "%d-%m-%Y %H:%M:%S"))
-  }
-
-  if ("date_time_hst" %in% colnames(data) && is.character(data$date_time_hst)) {
-  data$date_time_hst <- as.POSIXct(data$date_time_hst, format = "%m/%d/%Y %H:%M:%S")
-}
-
-  
-
-
-  
-
-  # Assign each dataframe to a variable based on file index
-  assign(paste0("df", i), data)
-}
-
-# Assign data to respective data frames (df1, df2, df3, df4)
-assign(paste0("df", i), data)
-
-
-# Now you have df1, df2, df3, and df4 dataframes with merged datetime column
-
-
-```
-
-
-
-
 
 
 
@@ -216,10 +104,33 @@ for (i in seq_along(file_list)) {
 assign(paste0("df", i), data)
 
 # Combine all dataframes into one dataframe and select only the required columns
-pH_joined <- bind_rows(df1, df2, df3, df4) %>%
+pH_joined <- bind_rows(df1, df2, df3, df4, df5) %>%
   select(date_time_hst, pH)
 
 ```
 
 
+
+```{r}
+a <- ggplot(pH_joined, aes(x = date_time_hst, 
+                      y = pH)) +
+  geom_line()
+
+ggplotly(a)
+```
+
+Notes:
+
+- Maybe leave out df1 because it's only 2 weeks of data with major gap until next hobo deployed
+- Trim
+- Add locations
+- Need Feb - April 2024 pH data (both sites)
+  - in logger notes but not in pH folder
+
+
+Trimming 
+
+Kalauhaihai July - Sept 2023
+- 7/12/2023 16:40:00
+- 9/18/2023 13:25:00
 
