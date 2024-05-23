@@ -1,0 +1,185 @@
+---
+title: "oxygen_clean_test"
+author: "Anson Ekau"
+date: "2024-05-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+library(plotly)
+```
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# Set the working directory to the project root folder
+here::set_here()
+
+# Define the path to the raw data folder
+raw_data_folder <- here("raw_data", "raw_oxygen")
+
+# Get the list of files in the raw_pH folder
+file_list <- list.files(path = raw_data_folder, full.names = TRUE)
+
+# Define a function to read and clean the column names
+read_and_clean_data <- function(file_path) {
+  # Check if file is .csv or .txt
+  file_ext <- tools::file_ext(file_path)
+  
+  # Read the file based on the extension
+  if (file_ext == "csv") {
+    data <- read_csv(file_path, skip = 1)
+  } else if (file_ext == "txt") {
+    data <- read_tsv(file_path)
+  } else {
+    stop("Unsupported file format")
+  }
+
+  if (file_ext == "csv") {
+  data <- read_csv(file_path, skip = 1)
+} else if (file_ext == "txt") {
+  # Read the first line to check if it starts with "Serial"
+  first_line <- readLines(file_path, n = 1)
+
+  if (startsWith(first_line, "Serial")) {
+    data <- read_tsv(file_path, skip = 1)
+  } else {
+    data <- read_tsv(file_path)
+  }
+} else {
+  stop("Unsupported file format")
+}
+
+
+
+  # Clean column names using janitor's clean_names()
+  data <- data %>% clean_names()
+
+  return(data)
+}
+
+
+# Loop through each file, read, and clean the data
+for (i in seq_along(file_list)) {
+  data <- read_and_clean_data(file_list[i])
+  
+  # Extract site information from file name
+  if (grepl("Kalauhaihai", file_list[i])) {
+    data$site <- "Kalauhaihai"
+  } else if (grepl("Kanewai", file_list[i])) {
+    data$site <- "Kanewai"
+  }
+  
+  # Change columns containing "date" in their names to "date_time_hst"
+  date_columns <- grep("date", colnames(data), ignore.case = TRUE)
+  if (length(date_columns) > 0) {
+    colnames(data)[date_columns] <- "date_time_hst"
+  }
+  
+  date_columns <- grep("Date", colnames(data), ignore.case = TRUE)
+  if (length(date_columns) > 0) {
+    colnames(data)[date_columns] <- "date_time_hst"
+  }
+  
+  # Change columns containing "p_h" in their names to "pH"
+  do_columns <- grep("do_conc", colnames(data), ignore.case = TRUE)
+  if (length(do_columns) > 0) {
+    colnames(data)[do_columns] <- "oxygen"
+  }
+
+  # Merge date and time columns into a single datetime column
+  if ("date_time_hst" %in% colnames(data) && "time" %in% colnames(data)) {
+    data <- data %>%
+      mutate(date_time_hst = as.POSIXct(paste(date_time_hst, time), format = "%d-%m-%y %H:%M:%S"))
+  }
+  
+  # Set the class of "date_time_hst" column to POSIXct with the specified format
+  if ("date_time_hst" %in% colnames(data)) {
+    date_format <- c("%m/%d/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S %Z", "%d/%m/%y %H:%M:%S")
+    for (format in date_format) {
+      data$date_time_hst <- as.POSIXct(data$date_time_hst, format = format, tz = "GMT", tryFormats = c(format))
+    }
+  }
+
+
+  # Assign each dataframe to a variable based on file index
+  assign(paste0("df", i), data)
+}
+
+
+```
+
+```{r}
+# Trimming
+
+df8 <- 
+  df8 %>% 
+  filter(date_time_hst >= "2023-09-18 14:45:00" & date_time_hst <= "2023-09-18 10:19:00")
+
+df7 <- 
+  df7 %>% 
+  filter(date_time_hst >= "2023-09-18 13:45:00" & date_time_hst <= "2024-01-18 9:42:00")
+
+df6 <- 
+  df6 %>% 
+  filter(date_time_hst >= "2022-10-06 10:10:00" & date_time_hst <= "2022-11-08 09:30:00")
+
+df5 <- 
+  df5 %>% 
+  filter(date_time_hst >= "2024-02-01 10:26:00" & date_time_hst <= "2024-03-12 10:25:00")
+
+df2 <-
+  df2 %>% 
+  filter(date_time_hst >= "2023-02-16 9:52:00" & date_time_hst <= "2023-04-05 9:35:00")
+
+df3 <-
+  df3 %>% 
+  filter(date_time_hst >= "2023-02-09 10:13:00" & date_time_hst <= "2023-04-05 10:15:00")
+
+df1 <-
+  df1 %>% 
+  filter(date_time_hst >= "2023-04-28 15:10:00" & date_time_hst <= "2023-05-05 9:30:00")
+
+df4 <-
+  df4 %>% 
+  filter(date_time_hst >= "52024-02-01 09:31:00" & date_time_hst <= "2024-03-12 10:00:00")
+
+```
+
+2/1/2024 9:31:00
+3/12/2024 10:00:00
+
+
+2/1/2024 10:26:00
+3/12/2024 10:25:00
+
+9/18/2023 13:45:00
+1/18/2024 9:42:00
+
+1/18/2024 10:19:00
+9/18/2023 14:45:00
+
+
+
+
+```{r}
+# join
+oxygen_joined <- bind_rows(df1, df2, df3, df4, df5, df6, df7, df8) %>% 
+  select(date_time_hst, oxygen, site)
+
+
+```
+
+```{r}
+a <- ggplot(pH_joined, aes(x = date_time_hst, 
+                      y = oxygen, color = site)) +
+  geom_line(size = 0.1) +
+  theme_minimal()
+
+ggplotly(a)
+```
