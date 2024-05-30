@@ -1,0 +1,50 @@
+---
+title: "joining_for_loops"
+author: "Anson Ekau"
+date: "2024-05-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse) #A toolbox full of more toolboxes
+library(here)#Sets working directory, type the following in console or in a code chunk. 'here::set_here()' 
+library(naniar)
+```
+
+#Read in files
+```{r}
+oxygen <- read_csv(here("cleaned_data/oxygen_joined.csv"))
+pH <- read_csv(here("cleaned_data/pH_joined.csv"))
+temp <- read_csv(here("cleaned_data/temp_joined.csv"))
+```
+#Join files
+```{r}
+all_data <- bind_rows(oxygen,
+          pH,
+          temp)
+```
+
+```{r}
+write_csv(all_data, here("cleaned_data/master_data.csv"))
+```
+
+```{r}
+all_data_pivot <- all_data %>% 
+  pivot_longer(cols = c(oxygen, temperature, pH), 
+               names_to = "variable", 
+               values_to = "value") %>%
+  filter(!is.na(value))
+```
+
+```{r}
+write_csv(all_data_pivot, here("cleaned_data/master_data_pivot.csv"))
+```
+
+```{r}
+all_data_pivot %>%
+  group_by(site, site_specific, variable) %>%
+  summarise(percent_missing = mean(is.na(value)) * 100)
+```
+
+
