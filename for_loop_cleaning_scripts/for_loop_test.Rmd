@@ -7,14 +7,15 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
-library(here)
-library(janitor)
-library(plotly)
+library(tidyverse) #A toolbox full of more toolboxes
+library(here) #Sets working directory, type the following in console or in a code chunk. 'here::set_here()' 
+library(janitor) #Used to clean names
+library(plotly) #Used to make ggplots interactive
 ```
 
 
-
+#Set Up
+The "Set Up" sections sets the working directory using the here() function. It also defines the path to the raw data folder and the specific variable folder. Inside the variable folders are the raw data files. 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 # Set the working directory to the project root folder

@@ -1,0 +1,189 @@
+---
+title: "oxygen_clean_test"
+author: "Anson Ekau"
+date: "2024-05-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse) #A toolbox full of more toolboxes
+library(here) #Sets working directory, type the following in console or in a code chunk. 'here::set_here()' 
+library(janitor) #Used to clean names
+library(plotly) #Used to make ggplots interactive
+```
+
+#Set up
+The "Set Up" sections sets the working directory using the here() function. It also defines the path to the raw data folder and the specific variable folder. Inside the variable folders are the raw data files. 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# Set the working directory to the project root folder
+here::set_here()
+
+# Define the path to the raw data folder
+raw_data_folder <- here("raw_data", "raw_oxygen")
+
+# Get the list of files in the raw_pH folder
+file_list <- list.files(path = raw_data_folder, full.names = TRUE)
+
+```
+
+
+#Define Read and Clean Function
+The following chunk creates a function using loops to read in the raw data files. The files come in .txt and .csv. This is important to note because reading in these files uses different functions and specific arguments need to be set to read them in correctly. 
+```{r}
+# Define a function to read and clean the column names
+read_and_clean_data <- function(file_path) {
+  # Check if file is .csv or .txt
+  file_ext <- tools::file_ext(file_path)
+  
+  if (file_ext == "csv") {
+  data <- read_csv(file_path, skip = 1)
+} else if (file_ext == "txt") {
+  # Read the first line to check if it starts with "Serial"
+  first_line <- readLines(file_path, n = 1)
+
+  if (startsWith(first_line, "Serial")) {
+    data <- read_tsv(file_path, skip = 1)
+  } else {
+    data <- read_tsv(file_path)
+  }
+} else {
+  stop("Unsupported file format")
+}
+
+
+
+  # Clean column names using janitor's clean_names()
+  data <- data %>% clean_names()
+
+  return(data)
+}
+```
+
+
+#Define Read and Clean Function
+The following chunk creates a function using loops to read in the raw data files. The files come in .txt and .csv. This is important to note because reading in these files uses different functions and specific arguments need to be set to read them in correctly. 
+
+When reading in a text file there will most likely be separate date and time column. CSV files will have a combined date time column. Its important to check if there are multiple formats for the date time columns. 
+```{r message=FALSE, warning=FALSE}
+
+# Loop through each file, read, and clean the data
+for (i in seq_along(file_list)) {
+  data <- read_and_clean_data(file_list[i])
+  
+  # Add site location to files
+  if (grepl("Kalauhaihai", file_list[i])) {
+    data$site <- "Kalauhaihai"
+  } else if (grepl("Kanewai", file_list[i])) {
+    data$site <- "Kanewai"
+  }
+  
+  # Change columns containing "date" in their names to "date_time_hst"
+  date_columns <- grep("date", colnames(data), ignore.case = TRUE)
+  if (length(date_columns) > 0) {
+    colnames(data)[date_columns] <- "date_time_hst"
+  }
+  
+  # Change columns containing "do_conc" in their names to "oxygen"
+  do_columns <- grep("do_conc", colnames(data), ignore.case = TRUE)
+  if (length(do_columns) > 0) {
+    colnames(data)[do_columns] <- "oxygen"
+  }
+
+ # Merge date and time columns into a single datetime column
+  if ("date_time_hst" %in% colnames(data) && "time" %in% colnames(data)) {
+    data <- data %>%
+      mutate(date_time_hst = as.POSIXct(paste(date_time_hst, time), format = "%d-%m-%y %H:%M:%S"))
+  }
+  
+  # Set the class of "date_time_hst" column to POSIXct with the specified format
+  if ("date_time_hst" %in% colnames(data)) {
+    data <- data %>%
+      mutate(date_time_hst = as.POSIXct(data$date_time_hst, format = "%m/%d/%y %H:%M:%S"))
+   }
+  
+  # Assign each dataframe to a variable based on file index
+    assign(tolower(paste0(gsub("\\..*", "", basename(file_list[i])))), data)
+}
+
+
+```
+
+
+#Trimming
+The following section is trimming the data and removing the times the loggers were out of the water. 
+
+This is where manual input is needed. Manually add the new data name, and the specific time the logger was in and out of the water. Refer to the video for help in this section. 
+
+Format:
+'replace this with the data name' <- 'replace this with the data name' %>% 
+  filter(date_time_hst >= "year-month-day hour:minute:sec" & date_time_hst <= "year-month-day hour:minute:sec)
+  
+Example: 
+data_oxygen_septjan2024_kanewai_21446085 <- 
+  data_oxygen_septjan2024_kanewai_21446085 %>% 
+  filter(date_time_hst >= "2023-09-18 14:45:00" & date_time_hst <= "2024-01-18 10:19:00")
+```{r}
+# Trimming
+
+data_oxygen_septjan2024_kanewai_21446085 <- 
+  data_oxygen_septjan2024_kanewai_21446085 %>% 
+  filter(date_time_hst >= "2023-09-18 14:45:00" & date_time_hst <= "2024-01-18 10:19:00")
+
+data_oxygen_septjan2024_kalauhaihai_21515403 <- 
+  data_oxygen_septjan2024_kalauhaihai_21515403 %>% 
+  filter(date_time_hst >= "2023-09-18 13:45:00" & date_time_hst <= "2024-01-18 9:42:00")
+
+data_oxygen_octnov2022_kalauhaihai_21446085 <- 
+  data_oxygen_octnov2022_kalauhaihai_21446085 %>% 
+  filter(date_time_hst >= "2022-10-06 10:10:00" & date_time_hst <= "2022-11-08 09:30:00")
+
+data_oxygen_febmar2024_kanewai_21515403 <- 
+  data_oxygen_febmar2024_kanewai_21515403 %>% 
+  filter(date_time_hst >= "2024-02-01 10:26:00" & date_time_hst <= "2024-03-12 10:25:00")
+
+data_oxygen_aprmay2023_kalauhaihai_21446085 <-
+  data_oxygen_aprmay2023_kalauhaihai_21446085 %>% 
+  filter(date_time_hst >= "2023-02-16 9:52:00" & date_time_hst <= "2023-04-05 9:35:00")
+
+data_oxygen_febapr2023_kanewaispringrock_21515403 <-
+  data_oxygen_febapr2023_kanewaispringrock_21515403 %>% 
+  filter(date_time_hst >= "2023-02-09 10:13:00" & date_time_hst <= "2023-04-05 10:15:00")
+
+data_oxygen_aprmay2023_kalauhaihai_21446085 <-
+  data_oxygen_aprmay2023_kalauhaihai_21446085 %>% 
+  filter(date_time_hst >= "2023-04-28 15:10:00" & date_time_hst <= "2023-05-05 9:30:00")
+
+data_oxygen_febmar2024_kalauhaihai_21446085 <-
+  data_oxygen_febmar2024_kalauhaihai_21446085 %>% 
+  filter(date_time_hst >= "2024-02-01 09:31:00" & date_time_hst <= "2024-03-12 10:00:00")
+
+```
+
+
+#Join Data
+This last section joins the data. One again manual input is needed. Add the new files separating by columns and new lines. 
+```{r}
+# join
+oxygen_joined <- bind_rows(data_oxygen_septjan2024_kanewai_21446085,
+  data_oxygen_septjan2024_kalauhaihai_21515403,
+  data_oxygen_octnov2022_kalauhaihai_21446085,
+  data_oxygen_febmar2024_kanewai_21515403,
+  data_oxygen_aprmay2023_kalauhaihai_21446085,
+  data_oxygen_febapr2023_kanewaispringrock_21515403,
+  data_oxygen_aprmay2023_kalauhaihai_21446085,
+  data_oxygen_febmar2024_kalauhaihai_21446085) %>% 
+  select(date_time_hst, oxygen, site)
+
+
+```
+
+```{r}
+a <- ggplot(oxygen_joined, aes(x = date_time_hst, 
+                      y = oxygen, color = site)) +
+  geom_line(size = 0.1) +
+  theme_minimal()
+
+ggplotly(a)
+```
