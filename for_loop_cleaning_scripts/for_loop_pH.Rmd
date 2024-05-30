@@ -158,6 +158,11 @@ pH_joined <- bind_rows(data_ph_julysept2023_kalauhaihai_21433529,
   select(date_time_hst, pH, site)
 ```
 
+#Write CSV
+```{r}
+write_csv(pH_joined, here("cleaned_data/pH_joined.csv"))
+```
+
 ```{r}
 a <- ggplot(pH_joined, aes(x = date_time_hst, 
                       y = pH, color = site)) +

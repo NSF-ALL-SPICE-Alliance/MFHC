@@ -179,6 +179,11 @@ oxygen_joined <- bind_rows(data_oxygen_septjan2024_kanewai_21446085,
 
 ```
 
+#Write CSV
+```{r}
+write_csv(oxygen_joined, here("cleaned_data/oxygen_joined.csv"))
+```
+
 ```{r}
 a <- ggplot(oxygen_joined, aes(x = date_time_hst, 
                       y = oxygen, color = site)) +

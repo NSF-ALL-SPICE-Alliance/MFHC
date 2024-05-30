@@ -26,6 +26,10 @@ raw_data_folder <- here("raw_data", "raw_temperature")
 # Get the list of files in the raw_pH folder
 file_list <- list.files(path = raw_data_folder, full.names = TRUE)
 
+# List of site names to check for
+site_names <- c("Garage", "Makaha", "Auwai", "Norfolk", "Highway", "Shade", "Octopus", "Rock", "Berry", "Springledge", "Coconut")
+
+
 ```
 
 #Define Read and Clean Function
@@ -76,6 +80,14 @@ for (i in seq_along(file_list)) {
     data$site <- "Kalauhaihai"
   } else if (grepl("Kanewai", file_list[i])) {
     data$site <- "Kanewai"
+  }
+  
+    # Check for site-specific names and add them to the 'site_specific' column
+  for (site_name in site_names) {
+    if (grepl(site_name, file_list[i], ignore.case = TRUE)) {
+      data$site_specific <- site_name
+      break  # Once found, break out of the loop
+    }
   }
   
   # Change columns containing "date" in their names to "date_time_hst"
@@ -330,8 +342,13 @@ data_temp_febapr2024_kanewaiauwaiunderfootbridge_20970102,
 data_temp_febapr2024_kanewaifishpondedgenorfolk_20970107,
 data_temp_febapr2024_kanewairockstairsbywall_20970108,
 data_temp_febapr2024_kanewaispringledgemakaiend_21445022) %>% 
-  select(date_time_hst, temperature, site)
+  select(date_time_hst, temperature, site, site_specific)
 
+```
+
+#Write CSV
+```{r}
+write_csv(temperature_joined, here("cleaned_data/temp_joined.csv"))
 ```
 
 ```{r eval=FALSE, include=FALSE}
