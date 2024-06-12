@@ -31,7 +31,7 @@ Home
 
 
 ```{r echo=FALSE}
-all_data <- read_csv(here("cleaned_data/master_dataframe_distinct.csv"))
+all_data <- read_csv(here("cleaned_data/master_data_pivot.csv"))
 ```
 
 ```{r echo=FALSE}
@@ -63,7 +63,7 @@ Row
 
 ```{r echo=FALSE}
 output$plot <- renderPlotly({
-  a <- ggplot(filtered_data(), aes(date_time, value)) +
+  a <- ggplot(filtered_data(), aes(date_time_hst, value)) +
       geom_line(color = "mediumaquamarine") +
       labs(x = "Date Time", y = paste(input$Select_Variable), title = paste(input$Select_Variable)
  ) +
@@ -76,9 +76,6 @@ output$plot <- renderPlotly({
 })
 
 plotlyOutput("plot")
-
-
-
 ```
 
 Kanewai Temperature
@@ -101,7 +98,7 @@ kanewai_temp <- all_data %>%
 ```{r echo=FALSE}
 output$plot2 <- renderPlotly({
   ggplotly(
-    ggplot(kanewai_temp, aes(date_time, value, color = site_specific)) +
+    ggplot(kanewai_temp, aes(date_time_hst, value, color = site_specific)) +
       geom_line() +
       facet_wrap(~site_specific) +
       theme_minimal() +
@@ -135,7 +132,7 @@ kalauhaihai_temp <- all_data %>%
 ```{r echo=FALSE}
 output$plot3 <- renderPlotly({
   ggplotly(
-    ggplot(kalauhaihai_temp, aes(date_time, value, color = site_specific)) +
+    ggplot(kalauhaihai_temp, aes(date_time_hst, value, color = site_specific)) +
       geom_line() +
       facet_wrap(~site_specific, scales = "free_x") +
       theme_minimal() +
@@ -147,52 +144,52 @@ plotlyOutput("plot3")
 ```
 
 
-Variable Interactions
-=========================================================
-<div style="text-align:center;">
-  <img src="mfch_horses.jpg" alt="MFCH Horses" style="width: 1200px; height: 700px;" />
-</div>
+<!-- Variable Interactions -->
+<!-- ========================================================= -->
+<!-- <div style="text-align:center;"> -->
+<!--   <img src="mfch_horses.jpg" alt="MFCH Horses" style="width: 1200px; height: 700px;" /> -->
+<!-- </div> -->
 
-Row
----------------------------------------------------------
+<!-- Row -->
+<!-- --------------------------------------------------------- -->
 
-```{r echo=FALSE}
-unique_site <- unique(all_data$site)
-unique_variable1 <- unique(all_data$variable)
-unique_variable2 <- unique(all_data$variable)
-```
-
-
-```{r echo=FALSE}
-selectInput("Select_Variable1", label = "Select Variable 1", choices = unique_variable1)
-selectInput("Select_Variable2", label = "Select Variable 2", choices = unique_variable2)
-selectInput("Select_Site", label = "Select Site", choices = unique_site)
-
-```
+<!-- ```{r echo=FALSE} -->
+<!-- unique_site <- unique(all_data$site) -->
+<!-- unique_variable1 <- unique(all_data$variable) -->
+<!-- unique_variable2 <- unique(all_data$variable) -->
+<!-- ``` -->
 
 
-```{r echo=FALSE}
-filtered_interactive_data <- reactive({
-  all_data %>% 
-    filter(variable == input$Select_Variable1 | 
-           variable == input$Select_Variable2,
-           site == input$Select_Site)
-})
-```
+<!-- ```{r echo=FALSE} -->
+<!-- selectInput("Select_Variable1", label = "Select Variable 1", choices = unique_variable1) -->
+<!-- selectInput("Select_Variable2", label = "Select Variable 2", choices = unique_variable2) -->
+<!-- selectInput("Select_Site", label = "Select Site", choices = unique_site) -->
+
+<!-- ``` -->
 
 
-```{r echo=FALSE}
-output$plot4 <- renderPlotly({
-  ggplotly(
-    ggplot(filtered_interactive_data(), aes(input$Select_Variable1, input$Select_Variable2)) +
-      geom_point(color = "steelblue") +
-      geom_smooth() +
-      theme_minimal() 
-  )
-})
+<!-- ```{r echo=FALSE} -->
+<!-- filtered_interactive_data <- reactive({ -->
+<!--   all_data %>%  -->
+<!--     filter(variable == input$Select_Variable1 |  -->
+<!--            variable == input$Select_Variable2, -->
+<!--            site == input$Select_Site) -->
+<!-- }) -->
+<!-- ``` -->
 
-plotlyOutput("plot4")
-```
+
+<!-- ```{r echo=FALSE} -->
+<!-- output$plot4 <- renderPlotly({ -->
+<!--   ggplotly( -->
+<!--     ggplot(filtered_interactive_data(), aes(input$Select_Variable1, input$Select_Variable2)) + -->
+<!--       geom_point(color = "steelblue") + -->
+<!--       geom_smooth() + -->
+<!--       theme_minimal()  -->
+<!--   ) -->
+<!-- }) -->
+
+<!-- plotlyOutput("plot4") -->
+<!-- ``` -->
 
 
 

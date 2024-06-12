@@ -38,13 +38,24 @@ all_data_pivot <- all_data %>%
 ```
 
 ```{r}
-write_csv(all_data_pivot, here("cleaned_data/master_data_pivot.csv"))
-```
-
-```{r}
 all_data_pivot %>%
   group_by(site, site_specific, variable) %>%
   summarise(percent_missing = mean(is.na(value)) * 100)
 ```
 
+```{r}
+#write a for loop checking for n/a in site_specific column and replacing them with the character "test". the data set is called all_data_pivot
+
+# Assuming all_data_pivot is your data frame
+for (i in 1:nrow(all_data_pivot)) {
+  if (is.na(all_data_pivot[i, "site_specific"])) {
+    all_data_pivot[i, "site_specific"] <- "General"
+  }
+}
+
+```
+
+```{r}
+write_csv(all_data_pivot, here("cleaned_data/master_data_pivot.csv"))
+```
 
