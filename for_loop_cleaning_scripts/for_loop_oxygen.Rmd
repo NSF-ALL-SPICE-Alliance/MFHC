@@ -159,6 +159,13 @@ data_oxygen_febmar2024_kalauhaihai_21446085 <-
   data_oxygen_febmar2024_kalauhaihai_21446085 %>% 
   filter(date_time_hst >= "2024-02-01 09:31:00" & date_time_hst <= "2024-03-12 10:00:00")
 
+# data_oxygen_marjune2024_kalauhaihaigarage_21515403 <-
+#   data_oxygen_marjune2024_kalauhaihaigarage_21515403 %>% 
+#   filter(date_time_hst >= "2024-02-01 09:31:00" & date_time_hst <= "2024-03-12 10:00:00")
+
+# data_oxygen_marjune2024_kanewaispringrock_21446085 <-
+#   data_oxygen_marjune2024_kanewaispringrock_21446085 %>% 
+#   filter(date_time_hst >= "2024-02-01 09:31:00" & date_time_hst <= "2024-03-12 10:00:00")
 ```
 
 
@@ -173,7 +180,9 @@ oxygen_joined <- bind_rows(data_oxygen_septjan2024_kanewai_21446085,
   data_oxygen_aprmay2023_kalauhaihai_21446085,
   data_oxygen_febapr2023_kanewaispringrock_21515403,
   data_oxygen_aprmay2023_kalauhaihai_21446085,
-  data_oxygen_febmar2024_kalauhaihai_21446085) %>% 
+  data_oxygen_febmar2024_kalauhaihai_21446085,
+  data_oxygen_marjune2024_kalauhaihaigarage_21515403,
+  data_oxygen_marjune2024_kanewaispringrock_21446085) %>% 
   select(date_time_hst, oxygen, site)
 
 
