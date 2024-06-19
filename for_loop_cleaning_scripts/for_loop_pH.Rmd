@@ -145,6 +145,22 @@ data_ph_julysept2023_kalauhaihai_21433529 <-
   data_ph_julysept2023_kalauhaihai_21433529 %>% 
   filter(date_time_hst >= "2023-07-12 16:40:00" & date_time_hst <= "2023-09-17 13:25:00")
 
+# data_pH_AprJune2024_KalauhaihaiGarage_21952333 <-
+#   data_pH_AprJune2024_KalauhaihaiGarage_21952333 %>% 
+#   filter(date_time_hst >= "2023-07-12 16:40:00" & date_time_hst <= "2023-09-17 13:25:00")
+
+# data_pH_AprJune2024_KanewaiSpringRock_21433529 <-
+#   data_pH_AprJune2024_KanewaiSpringRock_21433529 %>% 
+#   filter(date_time_hst >= "2023-07-12 16:40:00" & date_time_hst <= "2023-09-17 13:25:00")
+
+# data_pH_FebApr2024_KalauhaihaiGarage_21873460 <-
+#   data_pH_FebApr2024_KalauhaihaiGarage_21873460 %>% 
+#   filter(date_time_hst >= "2023-07-12 16:40:00" & date_time_hst <= "2023-09-17 13:25:00")
+
+# data_pH_FebApr2024_KanewaiSpringRock_20839036 <-
+#   data_pH_FebApr2024_KanewaiSpringRock_20839036 %>% 
+#   filter(date_time_hst >= "2023-07-12 16:40:00" & date_time_hst <= "2023-09-17 13:25:00")
+
 ```
 
 #Join Data
@@ -154,7 +170,11 @@ pH_joined <- bind_rows(data_ph_julysept2023_kalauhaihai_21433529,
   data_ph_apr2022_kalauhaihai_20839036,
   data_ph_febapr2023_kanewaispringrock_21433529,
   data_ph_febapr2023_kalauhaihai_20839036,
-  data_ph_octnov2022_kalauhaihai_20839036) %>% 
+  data_ph_octnov2022_kalauhaihai_20839036,
+  data_ph_aprjune2024_kalauhaihaigarage_21952333,
+  data_ph_aprjune2024_kanewaispringrock_21433529,
+  data_ph_febapr2024_kalauhaihaigarage_21873460,
+  data_ph_febapr2024_kanewaispringrock_20839036) %>% 
   select(date_time_hst, pH, site)
 ```
 
