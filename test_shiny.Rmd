@@ -1,0 +1,80 @@
+---
+title: "test"
+author: "Anson Ekau"
+date: "2024-06-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+suppressPackageStartupMessages(library(shiny))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(ggplot2))
+```
+
+```{r}
+ # Define UI for time input with JavaScript validation
+time_input_ui <- tagList(
+    tags$head(
+        tags$link(
+            rel = "stylesheet",
+            type = "text/css",
+            href = "styles.css"
+        ),
+        tags$link(
+            type = "text/css",
+            rel = "stylesheet",
+            href = "time_input.css"
+        ),
+        tags$style(
+            "#timeOutput {
+                background-color: #353535;
+                color: #f1f1f1;
+                box-sizing: content-box;
+                padding: 12px;
+            }"
+        ),
+        tags$title("Time Input Example | shinyAppTutorials "),
+        tags$script('
+            $(document).ready(function() {
+                $("#take_away").on("input", function() {
+                    var inputTime = $(this).val();
+                    var regex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                    if (!regex.test(inputTime)) {
+                        $(this).addClass("is-invalid");
+                    } else {
+                        $(this).removeClass("is-invalid");
+                    }
+                });
+            });
+        ')
+    ),
+    tags$main(
+        tags$h1("Time Input Example"),
+        tags$form(
+            textInput(inputId = "take_away", 
+                      label = "What time would you like to pick up your order?", 
+                      value = "12:00", 
+                      placeholder = "HH:MM",
+                      class = "form-control"),
+            tags$div(id = "timeValidation", class = "invalid-feedback",
+                     "Enter time in HH:MM format (24-hour clock)."),
+            tags$h2("Time Selected"),
+            verbatimTextOutput("timeOutput")
+        )
+    )
+)
+
+# Define UI for line graph
+line_graph_ui <- fluidPage(
+    titlePanel("Line Graph of Selected Data"),
+    sidebarLayout(
+        sidebarPanel(
+            selectInput("site", "Select Site:", choices = unique(data$site)),
+            selec
+
+```
+
+```{r}
+shinyApp(ui = ui, server = server)
+```
+
