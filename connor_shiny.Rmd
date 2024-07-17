@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(shiny)
+library(plotly)
+library(shinythemes)
 ```
 
 ```{r}
@@ -18,8 +20,10 @@ data <- read_csv(here("cleaned_data/master_data_pivot.csv"))
 
 
 ```{r}
+
 ui <- fluidPage(
-  titlePanel("Line Graph of Selected Data"),
+  theme = shinytheme("yeti"),
+  titlePanel("Maunalua Fishpond Heritage Center Dashboard"),
   sidebarLayout(
     sidebarPanel(
       selectInput("site", "Select Site:", choices = unique(data$site)),
@@ -27,7 +31,7 @@ ui <- fluidPage(
       selectInput("variable", "Select Variable:", choices = unique(data$variable))
     ),
     mainPanel(
-      plotOutput("linePlot")
+      plotlyOutput("linePlot")
     )
   )
 )
@@ -35,7 +39,8 @@ ui <- fluidPage(
 ```
 
 
-```{r}
+```{r, warning=FALSE}
+
 server <- function(input, output, session) {
   
   # Update site_specific choices based on selected site
@@ -45,19 +50,24 @@ server <- function(input, output, session) {
   })
   
   # Render the line plot
-  output$linePlot <- renderPlot({
+  output$linePlot <- renderPlotly({
     filtered_data <- data %>%
       filter(site == input$site,
              site_specific == input$site_specific,
              variable == input$variable)
     
-    ggplot(filtered_data, aes(x = date_time_hst, y = value)) +
-      geom_line() +
+    p <- ggplot(filtered_data, aes(x = date_time_hst, y = value)) +
+      geom_line(color = "steelblue") +
       labs(title = paste("Line Graph of", input$variable, "at", input$site, "-", input$site_specific),
            x = "Date Time",
-           y = input$variable)
+           y = input$variable) +
+      theme_bw()
+    
+    ggplotly(p)
   })
 }
+
+shinyApp(ui, server)
 
 ```
 
