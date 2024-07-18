@@ -1,4 +1,3 @@
-
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
@@ -35,7 +34,7 @@ ui <- page_sidebar(
   
   layout_columns(
     
-    card(card_header("Output"),
+    card(card_header(),
          plotlyOutput("linePlot")
                       
   # card(card_header("Output"),
@@ -81,7 +80,7 @@ server <- function(input, output, session) {
              variable == input$variable)
     
    p <- ggplot(filtered_data, aes(x = date_time_hst, y = value)) +
-      geom_line() +
+      geom_line(color = "mediumaquamarine") +
       labs(title = paste("Line Graph of", input$variable, "at", input$site, "-", input$site_specific),
            x = "Date Time",
            y = input$variable) #+
