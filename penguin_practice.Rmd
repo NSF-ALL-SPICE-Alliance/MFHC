@@ -1,0 +1,70 @@
+---
+title: "Penguin practice"
+output: html_document
+date: "2024-02-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(palmerpenguins)
+```
+Notes go here, code goes in grey space
+
+
+
+```{r}
+data <- penguins
+```
+
+
+
+
+```{r}
+?penguins
+```
+
+
+```{r}
+# Install and load ggplot2 if not already installed
+# install.packages("ggplot2")
+library(ggplot2)
+
+
+#'bill_length_mm'  'flipper_length_mm'
+
+ggplot(penguins, aes(x = bill_length_mm, y = flipper_length_mm, color = species)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Bill Length vs. Flipper Length",
+       x = "Bill Length (mm)",
+       y = "Flipper Length (mm)",
+       color = "Species") +
+  theme_minimal()
+
+```
+```{r}
+# Replace 'X_Variable' and 'Y_Variable' with variable names
+# ('body_mass_g' and 'flipper_length_mm')
+
+ggplot(penguins, aes(x = body_mass_g, y = flipper_length_mm, color = species)) +
+  geom_point() +
+  labs(title = "Scatter Plot of Body Mass vs. Flipper Length",
+       x = "Body Mass (g)",
+       y = "Flipper Length (mm)",
+       color = "Species") +
+  theme_
+```
+
+```{r}
+
+flipper_hist <- ggplot(data = penguins, aes(x = bill_depth_mm)) +
+  geom_histogram(aes(fill = species), 
+                 alpha = 0.5, 
+                 position = "identity") +
+  scale_fill_manual(values = c("darkorange","purple","cyan4")) +
+  labs(x = "Bill Depth length (mm)",
+       y = "Frequency",
+       title = "Penguin bill depths")
+
+flipper_hist
+```
+
