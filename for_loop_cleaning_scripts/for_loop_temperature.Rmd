@@ -244,6 +244,12 @@ data_temp_aproct2023_kalauhaihaigarage_20970102 <- data_temp_aproct2023_kalauhai
 data_temp_aproct2023_kalauhaihaimakaha_21445021 <- data_temp_aproct2023_kalauhaihaimakaha_21445021 %>% 
   filter(date_time_hst >= "2023-04-06 9:49:00" & date_time_hst <= "2023-10-05 9:33:00")
 
+data_temp_octnov2023_kalauhaihaigarage_20970108 <- data_temp_octnov2023_kalauhaihaigarage_20970108 %>% 
+  filter(date_time_hst >= "2023-10-05 1:00:00" & date_time_hst <= "2023-11-07 2:56:33")
+
+data_temp_octnov2023_kalauhaihaimakaha_20970107 <- data_temp_octnov2023_kalauhaihaimakaha_20970107 %>% 
+  filter(date_time_hst >= "2023-10-05 1:00:00" & date_time_hst <= "2023-11-07 2:49:10")
+
 data_temp_aproct2023_kanewaifishpondledgeedgenorfolk_20970110 <- data_temp_aproct2023_kanewaifishpondledgeedgenorfolk_20970110 %>% 
   filter(date_time_hst >= "2023-04-06 10:27:00" & date_time_hst <= "2023-10-05 10:17:00")
 
@@ -321,6 +327,8 @@ data_temp_nov2022feb2023_kalauhaihaigarage_20970109,
 data_temp_nov2022feb2023_kalauhaihaimakaha_20970123,
 data_temp_febapr2023_kalauhaihaigarage_20970122,
 data_temp_febapr2023_kalauhaihaimakaha_20970107,
+data_temp_octnov2023_kalauhaihaigarage_20970108,
+data_temp_octnov2023_kalauhaihaimakaha_20970107,
 data_temp_febapr2023_kanewaiauwaimakaisidefootbridge_20970093,
 data_temp_febapr2023_kanewaifishpondledgeedgenorfolk_20970108,
 data_temp_febapr2023_kanewaifishpondshadeunderxmasberry_21445019,
