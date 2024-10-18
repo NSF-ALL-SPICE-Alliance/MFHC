@@ -1,0 +1,13 @@
+name: mfhc
+title:
+username: ansonekau
+account: ansonekau
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10412478
+bundleId: 8287244
+url: https://ansonekau.shinyapps.io/mfhc/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: _site.yml|.RData|beta1.Rmd|index.Rmd|R-Basics Final.Rmd|README.md|Rplots.pdf|cleaning_scripts|raw_data
