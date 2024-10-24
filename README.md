@@ -57,11 +57,11 @@ The primary product is a Shiny Dashboard that displays pH, oxygen, conductivity,
 
 
 
-🌊 Adding New Data Update
+### 🌊 Adding New Data Update
 
 Follow these steps to upload new data to the dashboard and keep everything flowing smoothly. 🐟💧
 
--Download New Data 📥
+- **Download New Data 📥
 
 Download the latest data files and drag them into the raw_data folder.
 
