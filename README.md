@@ -61,32 +61,32 @@ The primary product is a Shiny Dashboard that displays pH, oxygen, conductivity,
 
 Follow these steps to upload new data to the dashboard and keep everything flowing smoothly. 🐟💧
 
-- **Download New Data 📥
+- Download New Data 📥
 
 Download the latest data files and drag them into the raw_data folder.
 
--Update the For Loop 🔄
+- Update the For Loop 🔄
 
 Add the code to the trimming section of the for_loop_temperature.Rmd file.
 
 Next, add the code to the join data section of the for_loop_temperature.Rmd file.
 
--Run the Code 🚀
+- Run the Code 🚀
 
 Run all the code in for_loop_temperature.Rmd.
 
 This will generate a new CSV called temp_joined in the cleaned_data folder.
 
--Commit & Push 💾➡️🌐
+- Commit & Push 💾➡️🌐
 
 Commit the new temp_joined file and the updated raw_data to GitHub.
 
--Generate the Master Data 📊
+- Generate the Master Data 📊
 
 Run the joining_data.Rmd to generate master_datapivot.csv in the cleaned_data folder.
 
 Push the new master_datapivot.csv to GitHub.
 
--Update the Dashboard 📈✨
+- Update the Dashboard 📈✨
 
 Now, users can pull the latest changes and run shiny_script.R to see the updated data on the dashboard! 🎉
