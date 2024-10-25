@@ -63,9 +63,9 @@ Download the latest data files and drag them into the raw_data folder.
 
 2. Update the For Loop 🔄
 
-Add the code to the trimming section of the for_loop_temperature.Rmd file.
+Add the code to the [trimming section of the for_loop_temperature.Rmd](https://github.com/NSF-ALL-SPICE-Alliance/MFHC/blob/7a64ecf53d1c734bceba0186795d9604cfadaf45/for_loop_cleaning_scripts/for_loop_temperature.Rmd#L124C2-L124C10) file.
 
-Next, add the code to the join data section of the for_loop_temperature.Rmd file.
+Next, add the code to the [join data section of the for_loop_temperature.Rmd](https://github.com/NSF-ALL-SPICE-Alliance/MFHC/blob/7a64ecf53d1c734bceba0186795d9604cfadaf45/for_loop_cleaning_scripts/for_loop_temperature.Rmd#L301) file.
 
 3. Run the Code 🚀
 
