@@ -1,3 +1,14 @@
+library(shiny)
+library(ggplot2)
+library(ggforce)
+library(dplyr)
+library(readr)
+library(here)
+library(magick)
+library(grid)
+
+
+
 # Load the original fishpond image
 pond_image <- image_read("kanewai_aerial.png")
 
@@ -19,29 +30,32 @@ data <- full_join(sensor_data, data, by = "site_specific")
 
 head(data)
 
+data <- data %>% 
+  filter(variable == "temperature" & site == "Kanewai")
+
+sum(is.na(data))
+
 # Shiny app
 
-#doesnt work yet, conversation can be found here: https://chatgpt.com/share/672d68a1-6930-8000-844a-9202fb5a25c2
 ui <- fluidPage(
   titlePanel("Fishpond Sensor Data Visualization"),
   sidebarLayout(
     sidebarPanel(
-      selectInput("site", "Select Site:", choices = unique(data$site)),
-      selectInput("site_specific", "Select Sensor Location:", choices = unique(data$site_specific)),
-      selectInput("variable", "Select Variable:", choices = unique(data$variable)),
       sliderInput(
         "date_time_hst", 
         "Select Date and Time:", 
         min = min(data$date_time_hst), 
         max = max(data$date_time_hst), 
-        value = range(data$date_time_hst), 
+        value = min(data$date_time_hst), 
         timeFormat = "%Y-%m-%d %H:%M:%S",
-        step = 600,  # 10-minute step
-        animate = animationOptions(interval = 1000, loop = TRUE)
+        step = 600  # 10-minute increments
       )
     ),
     mainPanel(
-      plotOutput("pondPlot")
+      fluidRow(
+        column(6, plotOutput("linePlot")),
+        column(6, plotOutput("pondImagePlot"))
+      )
     )
   )
 )
@@ -49,40 +63,51 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   filtered_data <- reactive({
     data %>%
-      filter(
-        site == input$site,
-        site_specific == input$site_specific,
-        variable == input$variable,
-        date_time_hst >= input$date_time_hst[1],
-        date_time_hst <= input$date_time_hst[2]
+      filter(date_time_hst == input$date_time_hst) %>%
+      select(site_specific, value) %>%
+      right_join(sensor_data, by = "site_specific")
+  })
+  
+  output$linePlot <- renderPlot({
+    filtered_line_data <- data %>% filter(date_time_hst <= input$date_time_hst)
+    
+    ggplot(filtered_line_data, aes(x = date_time_hst, y = value, color = site_specific)) +
+      geom_line() +
+      facet_wrap(~site_specific, scales = "free_y") +
+      labs(
+        title = "Temperature Over Time by Sensor Location",
+        x = "Time",
+        y = "Temperature (°C)"
+      ) +
+      theme_minimal() +
+      theme(
+        strip.text = element_text(size = 12),
+        legend.position = "none"
       )
   })
   
-  output$pondPlot <- renderPlot({
+  output$pondImagePlot <- renderPlot({
     pond_data <- filtered_data()
     
-    if (nrow(pond_data) > 0) {
-      ggplot() +
-        annotation_raster(
-          as.raster(pond_image), 
-          xmin = 0, xmax = 10, ymin = 0, ymax = 10
-        ) +
-        geom_point(
-          data = pond_data, 
-          aes(x = x, y = y, color = value), 
-          size = 3  # Equivalent to a radius of 0.3 on a continuous scale
-        ) +
-        scale_color_viridis_c(option = "C", name = paste(input$variable, "(units)")) +
-        xlim(0, 10) +
-        ylim(0, 10) +
-        theme_void() +
-        theme(legend.position = "right") +
-        ggtitle(paste("Sensor Data for", input$site_specific, "(", input$variable, ")"))
-    } else {
-      ggplot() + 
-        annotate("text", x = 5, y = 5, label = "No data available", size = 6) +
-        theme_void()
-    }
+    ggplot() +
+      annotation_custom(
+        rasterGrob(pond_image, width = unit(1, "npc"), height = unit(1, "npc")),
+        xmin = 0, xmax = 10, ymin = 0, ymax = 10
+      ) +
+      geom_circle(
+        data = pond_data, 
+        aes(x0 = x, y0 = y, r = radius, fill = value), 
+        color = "black", alpha = 0.7
+      ) +
+      scale_fill_viridis_c(name = "Temperature (°C)", option = "C") +
+      coord_fixed() +
+      labs(
+        title = "Pond Sensor Locations Colored by Value",
+        x = "Pond X-Coordinate",
+        y = "Pond Y-Coordinate"
+      ) +
+      theme_minimal() +
+      theme(legend.position = "right")
   })
 }
 
