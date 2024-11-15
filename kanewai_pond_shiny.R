@@ -1,3 +1,11 @@
+library(readr)  # Load the readr package for read_csv()
+library(here)
+library(dplyr)
+library(shiny)
+library(ggplot2)
+library(magick)
+
+
 # Load the original fishpond image
 pond_image <- image_read("kanewai_aerial.png")
 
