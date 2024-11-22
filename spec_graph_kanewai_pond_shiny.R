@@ -6,6 +6,7 @@ library(readr)
 library(here)
 library(magick)
 library(grid)
+library(plotly)
 
 # Load the original fishpond image
 pond_image <- image_read("kanewai_aerial.png")
@@ -50,7 +51,7 @@ ui <- fluidPage(
       )
     ),
     mainPanel(
-      plotOutput("pondImagePlot", click = "map_click"),
+      plotOutput("pondImagePlot", click = "map_click", width = "100%", height = "600px"),
       uiOutput("sensorPlots")
     )
   )
@@ -108,16 +109,16 @@ server <- function(input, output, session) {
     }
     
     sensor_name <- clicked_sensor()
-    plotOutput(paste0("plot_", sensor_name))
+    plotlyOutput(paste0("plot_", sensor_name))
   })
   
   observe({
     sensor_name <- clicked_sensor()
     if (!is.null(sensor_name)) {
-      output[[paste0("plot_", sensor_name)]] <- renderPlot({
+      output[[paste0("plot_", sensor_name)]] <- renderPlotly({
         sensor_data <- data %>% filter(site_specific == sensor_name)
         
-        ggplot(sensor_data, aes(x = date_time_hst, y = value)) +
+        line_plot <- ggplot(sensor_data, aes(x = date_time_hst, y = value)) +
           geom_line(color = "blue") +
           labs(
             title = paste("Data for Sensor:", sensor_name),
@@ -125,6 +126,7 @@ server <- function(input, output, session) {
             y = paste(input$variable, "(units)")
           ) +
           theme_minimal()
+        ggplotly(line_plot)
       })
     }
   })
