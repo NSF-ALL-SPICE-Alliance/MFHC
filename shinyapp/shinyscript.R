@@ -83,7 +83,8 @@ server <- function(input, output, session) {
       geom_line(color = "mediumaquamarine") +
       labs(title = paste("Line Graph of", input$variable, "at", input$site, "-", input$site_specific),
            x = "Date Time",
-           y = input$variable) #+
+           y = input$variable) +
+     theme_bw()#+
       #coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
    
     ggplotly(p)
