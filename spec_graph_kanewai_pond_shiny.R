@@ -119,7 +119,7 @@ server <- function(input, output, session) {
         sensor_data <- data %>% filter(site_specific == sensor_name)
         
         line_plot <- ggplot(sensor_data, aes(x = date_time_hst, y = value)) +
-          geom_line(color = "blue") +
+          geom_line(color = "blue", size = 0.2) +
           labs(
             title = paste("Data for Sensor:", sensor_name),
             x = "Date and Time",
