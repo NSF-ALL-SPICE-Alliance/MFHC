@@ -12,6 +12,8 @@ data <- read_csv(here("cleaned_data/master_data_pivot.csv"))
 
 
 
+
+
 sidebar_content <- list(
   selectInput("site", "Select Site:", choices = unique(data$site)),
   selectInput("site_specific", "Select Site Specific:", choices = NULL),
@@ -29,6 +31,8 @@ ui <- page_sidebar(
                    primary = "#c5a668",),
   
   title = "Maunalua Fishpond Heritage Center Dashboard",
+  
+  
   sidebar = sidebar(
     sidebar_content),
   
@@ -53,43 +57,61 @@ ui <- page_sidebar(
 
 server <- function(input, output, session) {
   
+  # Example function for validation
+  validate_selection <- function(site_specific, variable) {
+    # Define valid variables
+    valid_variables <- c("temperature", "oxygen", "pH")
+    
+    # Check if the selected variable is valid for the given location
+    if (!variable %in% valid_variables) {
+      stop("Error: The selected variable is not valid. Please select one of: temperature, oxygen, or pH.")
+    }
+    
+    # Custom validation for the 'general' site
+    if (site_specific == "General" && variable == "temperature") {
+      stop("Please select a specific site.")
+    }
+    
+    # Proceed with your logic if validation passes
+    if (site_specific != "General" && variable %in% c("pH", "oxygen")) {
+      stop("Only temperature is available for specific sites. Select Temperature or General to view the data.")
+    }
+    
+    return(paste("You selected site:", site_specific, "and variable:", variable))
+  }
   
-  #ranges <- reactiveValues(x = NULL, y = NULL)
   # Update site_specific choices based on selected site
   observe({
     selected_site <- input$site
     updateSelectInput(session, "site_specific", choices = unique(data[data$site == selected_site, "site_specific"]))
   })
   
-  # observeEvent(input$linePlot_dblclick, {
-  #   brush <- input$linePlot_brush
-  #   if (!is.null(brush)) {
-  #     ranges$x <- c(brush$xmin, brush$xmax)
-  #     ranges$y <- c(brush$ymin, brush$ymax)
-  #     
-  #   } else {
-  #     ranges$x <- NULL
-  #     ranges$y <- NULL
-  #   }
-  # })
-  
+  # Render the plot with validation
   output$linePlot <- renderPlotly({
-    filtered_data <- data %>%
-      filter(site == input$site,
-             site_specific == input$site_specific,
-             variable == input$variable)
-    
-   p <- ggplot(filtered_data, aes(x = date_time_hst, y = value)) +
-      geom_line(color = "mediumaquamarine") +
-      labs(title = paste("Line Graph of", input$variable, "at", input$site, "-", input$site_specific),
-           x = "Date Time",
-           y = input$variable) +
-     theme_bw()#+
-      #coord_cartesian(xlim = ranges$x, ylim = ranges$y, expand = FALSE)
-   
-    ggplotly(p)
+    # Perform validation before proceeding
+    tryCatch({
+      validate_selection(input$site_specific, input$variable)
+      
+      # Proceed to filter the data and create the plot
+      filtered_data <- data %>%
+        filter(site == input$site,
+               site_specific == input$site_specific,
+               variable == input$variable)
+      
+      p <- ggplot(filtered_data, aes(x = date_time_hst, y = value)) +
+        geom_line(color = "mediumaquamarine") +
+        labs(title = paste("Line Graph of", input$variable, "at", input$site, "-", input$site_specific),
+             x = "Date Time",
+             y = input$variable) +
+        theme_bw()
+      
+      ggplotly(p)
+    }, error = function(e) {
+      # Display the custom error message as a Shiny notification
+      showNotification(e$message, type = "error", duration = 10)
+      NULL # Return NULL to prevent rendering
+    })
   })
 }
-
 
 shinyApp(ui = ui, server = server)
