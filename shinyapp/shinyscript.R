@@ -7,9 +7,9 @@ library(bsicons)
 library(plotly)
 
 
+#THIS IS THE CURRENT WORKING MFHC APP/DASHBOARD
 
 data <- read_csv(here("cleaned_data/master_data_pivot.csv"))
-
 
 
 
@@ -18,9 +18,19 @@ sidebar_content <- list(
   selectInput("site", "Select Site:", choices = unique(data$site)),
   selectInput("site_specific", "Select Site Specific:", choices = NULL),
   selectInput("variable", "Select Variable:", choices = unique(data$variable)),
+  conditionalPanel(
+    condition = "input.variable == 'temperature'",
+    radioButtons(
+      inputId = "temp_unit",
+      label = "Select Temperature Unit:",
+      choices = c("Celsius" = "C", "Fahrenheit" = "F"),
+      selected = "C"
+    )
+  ),
   HTML('<img src="MFHClogo.png" width="100%" height="auto">'),
   "Welcome to the Maunalua Fishpond Heritage Center dashboard. Explore data on pH, oxygen levels, temperature, and conductivity. Please note that the site is a work in progress, with ongoing updates to enhance functionality and data availability."
 )
+
 
 show_hide <- actionButton(inputId = "button", label = "About")
 
@@ -56,62 +66,65 @@ ui <- page_sidebar(
 )
 
 server <- function(input, output, session) {
-  
-  # Example function for validation
+  # Function to validate selection
   validate_selection <- function(site_specific, variable) {
-    # Define valid variables
     valid_variables <- c("temperature", "oxygen", "pH")
-    
-    # Check if the selected variable is valid for the given location
     if (!variable %in% valid_variables) {
       stop("Error: The selected variable is not valid. Please select one of: temperature, oxygen, or pH.")
     }
-    
-    # Custom validation for the 'general' site
     if (site_specific == "General" && variable == "temperature") {
       stop("Please select a specific site.")
     }
-    
-    # Proceed with your logic if validation passes
     if (site_specific != "General" && variable %in% c("pH", "oxygen")) {
       stop("Only temperature is available for specific sites. Select Temperature or General to view the data.")
     }
-    
-    return(paste("You selected site:", site_specific, "and variable:", variable))
+    return(TRUE)
   }
   
-  # Update site_specific choices based on selected site
+  # Update site_specific choices based on the selected site
   observe({
     selected_site <- input$site
     updateSelectInput(session, "site_specific", choices = unique(data[data$site == selected_site, "site_specific"]))
   })
   
-  # Render the plot with validation
+  # Reactive function to filter and convert data
+  filtered_data <- reactive({
+    req(input$site, input$site_specific, input$variable)
+    
+    validate_selection(input$site_specific, input$variable)
+    
+    # Filter the data
+    filtered <- data %>%
+      filter(site == input$site,
+             site_specific == input$site_specific,
+             variable == input$variable)
+    
+    # Convert temperature if applicable
+    if (input$variable == "temperature" && input$temp_unit == "F") {
+      filtered$value <- filtered$value * 9 / 5 + 32
+    }
+    
+    filtered
+  })
+  
+  # Render the plot
   output$linePlot <- renderPlotly({
-    # Perform validation before proceeding
-    tryCatch({
-      validate_selection(input$site_specific, input$variable)
-      
-      # Proceed to filter the data and create the plot
-      filtered_data <- data %>%
-        filter(site == input$site,
-               site_specific == input$site_specific,
-               variable == input$variable)
-      
-      p <- ggplot(filtered_data, aes(x = date_time_hst, y = value)) +
-        geom_line(color = "mediumaquamarine") +
-        labs(title = paste("Line Graph of", input$variable, "at", input$site, "-", input$site_specific),
-             x = "Date Time",
-             y = input$variable) +
-        theme_bw()
-      
-      ggplotly(p)
-    }, error = function(e) {
-      # Display the custom error message as a Shiny notification
-      showNotification(e$message, type = "error", duration = 10)
-      NULL # Return NULL to prevent rendering
-    })
+    data <- filtered_data()
+    unit <- ifelse(input$variable == "temperature" && input$temp_unit == "F", "°F", "°C")
+    
+    # Plot using ggplot
+    p <- ggplot(data, aes(x = date_time_hst, y = value)) +
+      geom_line(color = "mediumaquamarine") +
+      labs(
+        title = paste("Line Graph of", input$variable, "at", input$site, "-", input$site_specific),
+        x = "Date Time",
+        y = paste(input$variable, "(", unit, ")")
+      ) +
+      theme_bw()
+    
+    ggplotly(p)
   })
 }
+
 
 shinyApp(ui = ui, server = server)
