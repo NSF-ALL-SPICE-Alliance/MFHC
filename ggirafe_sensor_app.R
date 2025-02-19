@@ -6,7 +6,7 @@ library(readr)
 library(here)
 library(magick)
 library(grid)
-library(plotly)
+library(ggiraph)
 
 # Load the original fishpond image
 pond_image <- image_read("kanewai_aerial.png")
@@ -16,11 +16,9 @@ pond_image_raster <- as.raster(pond_image)  # Convert to raster format
 sensor_data <- data.frame(
   site_specific = c("Norfolk", "Shade", "Auwai", "RockWall", "Rock", "Springledge"),
   x = c(0.5, 4, 5.2, 6.4, 5.5, 5.75),  # Adjusted X-coordinates within the range 0-10
-  y = c(0.5, 8.4, 9, 8.5, 6.5, 3.45)  # Adjusted Y-coordinates within the range 0-10
+  y = c(0.5, 8.4, 9, 8.5, 6.5, 3.45),  # Adjusted Y-coordinates within the range 0-10
+  radius = 3  # Adjust point size for better visualization
 )
-
-# Set the radius for each sensor circle (adjust as needed)
-sensor_data$radius <- 0.3
 
 # Read in variable data and merge with sensor data
 data <- read_csv(here("cleaned_data/master_data_pivot.csv"))
@@ -51,8 +49,14 @@ ui <- fluidPage(
       )
     ),
     mainPanel(
-      plotOutput("pondImagePlot", click = "map_click", width = "100%", height = "600px"),
-      uiOutput("sensorPlots")
+      fluidRow(
+        column(6,
+               girafeOutput("pondImagePlot", width = "100%", height = "600px")
+        ),
+        column(6,
+               girafeOutput("lineGraph", width = "100%", height = "600px")
+        )
+      )
     )
   )
 )
@@ -62,36 +66,36 @@ server <- function(input, output, session) {
   # Reactive data filtered by date and variable
   filtered_data <- reactive({
     data %>%
-      filter(date_time_hst == input$date_time_hst, variable == input$variable) %>%
+      filter(variable == input$variable) %>%
       select(site_specific, value, variable, date_time_hst) %>%
       right_join(sensor_data, by = "site_specific")
   })
   
   # Highlight clicked sensor
   clicked_sensor <- reactiveVal(NULL)
-  observeEvent(input$map_click, {
-    clicked <- nearPoints(sensor_data, input$map_click, xvar = "x", yvar = "y", maxpoints = 1)
-    if (nrow(clicked) > 0) {
-      clicked_sensor(clicked$site_specific)
+  observeEvent(input$pondImagePlot_selected, {
+    clicked <- input$pondImagePlot_selected
+    if (!is.null(clicked)) {
+      clicked_sensor(clicked$id)
     }
   })
   
   # Render the pond map with sensors
-  output$pondImagePlot <- renderPlot({
+  output$pondImagePlot <- renderGirafe({
     pond_data <- filtered_data()
     
-    ggplot() +
+    plot <- ggplot() +
       annotation_raster(
         pond_image_raster, 
         xmin = 0, xmax = 10, ymin = 0, ymax = 10
       ) +
-      geom_circle(
+      geom_point_interactive(
         data = pond_data,
-        aes(x0 = x, y0 = y, r = radius, fill = value),
-        color = "black",
+        aes(x = x, y = y, size = radius, color = value, tooltip = site_specific, data_id = site_specific),
         alpha = 0.7
       ) +
-      scale_fill_viridis_c(name = "Temperature (°C)", option = "C") +
+      scale_size_identity() +
+      scale_color_viridis_c(name = "Temperature (°C)", option = "C") +
       coord_fixed() +
       labs(
         title = "Pond Sensor Locations Colored by Value",
@@ -100,36 +104,32 @@ server <- function(input, output, session) {
       ) +
       theme_minimal() +
       theme(legend.position = "right")
-  })
-  
-  # Render dynamic sensor-specific plots
-  output$sensorPlots <- renderUI({
-    if (is.null(clicked_sensor())) {
-      return(h3("Click on a sensor on the map to view its data."))
-    }
     
-    sensor_name <- clicked_sensor()
-    plotlyOutput(paste0("plot_", sensor_name))
+    girafe(ggobj = plot, width_svg = 10, height_svg = 6)
   })
   
-  observe({
-    sensor_name <- clicked_sensor()
-    if (!is.null(sensor_name)) {
-      output[[paste0("plot_", sensor_name)]] <- renderPlotly({
-        sensor_data <- data %>% filter(site_specific == sensor_name)
-        
-        line_plot <- ggplot(sensor_data, aes(x = date_time_hst, y = value)) +
-          geom_line(color = "blue", size = 0.2) +
-          labs(
-            title = paste("Data for Sensor:", sensor_name),
-            x = "Date and Time",
-            y = paste(input$variable, "(units)")
-          ) +
-          theme_minimal()
-        ggplotly(line_plot)
-      })
-    }
+  # Render line graph with all data and highlight selected sensor
+  output$lineGraph <- renderGirafe({
+    all_data <- data %>% filter(variable == input$variable)
+    
+    selected_sensor <- clicked_sensor()
+    
+    plot <- ggplot(all_data, aes(x = date_time_hst, y = value, group = site_specific, color = site_specific)) +
+      geom_line_interactive(aes(alpha = ifelse(site_specific == selected_sensor, 1, 0.3),
+                                tooltip = paste(site_specific, value)),
+                            size = 1) +
+      scale_alpha_identity() +
+      labs(
+        title = "Time Series Data for All Sensors",
+        x = "Date and Time",
+        y = paste(input$variable, "(units)")
+      ) +
+      theme_minimal()
+    
+    girafe(ggobj = plot, width_svg = 10, height_svg = 6)
   })
 }
 
 shinyApp(ui, server)
+
+

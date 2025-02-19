@@ -38,11 +38,11 @@ ui <- fluidPage(
       sliderInput(
         "date_time_hst",
         "Select Date and Time:",
-        min = min(data$date_time_hst),
-        max = max(data$date_time_hst),
-        value = min(data$date_time_hst),
+        min = min(data$date_time_hst, na.rm = TRUE),
+        max = max(data$date_time_hst, na.rm = TRUE),
+        value = min(data$date_time_hst, na.rm = TRUE),
         timeFormat = "%Y-%m-%d %H:%M:%S",
-        step = 600  # 10-minute increments
+        step = 600
       ),
       selectInput(
         "variable",
@@ -52,22 +52,20 @@ ui <- fluidPage(
     ),
     mainPanel(
       plotOutput("pondImagePlot", click = "map_click", width = "100%", height = "600px"),
-      uiOutput("sensorPlots")
+      plotOutput("linePlot", hover = hoverOpts(id = "plot_hover"))
     )
   )
 )
 
 # Shiny app server logic
 server <- function(input, output, session) {
-  # Reactive data filtered by date and variable
   filtered_data <- reactive({
+    req(input$date_time_hst, input$variable)
     data %>%
       filter(date_time_hst == input$date_time_hst, variable == input$variable) %>%
-      select(site_specific, value, variable, date_time_hst) %>%
       right_join(sensor_data, by = "site_specific")
   })
   
-  # Highlight clicked sensor
   clicked_sensor <- reactiveVal(NULL)
   observeEvent(input$map_click, {
     clicked <- nearPoints(sensor_data, input$map_click, xvar = "x", yvar = "y", maxpoints = 1)
@@ -76,20 +74,28 @@ server <- function(input, output, session) {
     }
   })
   
-  # Render the pond map with sensors
+  hovered_transect <- reactiveVal(NULL)
+  observe({
+    req(input$plot_hover)
+    hover <- input$plot_hover
+    hover_point <- st_sfc(st_point(c(hover$x, hover$y)), crs = 4326)
+    kaalawai_joined_sf <- st_transform(data, crs = 4326)
+    nearest_index <- st_nearest_feature(hover_point, kaalawai_joined_sf)
+    if (!is.na(nearest_index)) {
+      hovered_transect(kaalawai_joined_sf$site_specific[nearest_index])
+    }
+  })
+  
   output$pondImagePlot <- renderPlot({
     pond_data <- filtered_data()
-    
     ggplot() +
       annotation_raster(
-        pond_image_raster, 
-        xmin = 0, xmax = 10, ymin = 0, ymax = 10
+        pond_image_raster, xmin = 0, xmax = 10, ymin = 0, ymax = 10
       ) +
       geom_circle(
         data = pond_data,
         aes(x0 = x, y0 = y, r = radius, fill = value),
-        color = "black",
-        alpha = 0.7
+        color = "black", alpha = 0.7
       ) +
       scale_fill_viridis_c(name = "Temperature (°C)", option = "C") +
       coord_fixed() +
@@ -98,37 +104,26 @@ server <- function(input, output, session) {
         x = "Pond X-Coordinate",
         y = "Pond Y-Coordinate"
       ) +
-      theme_minimal() +
-      theme(legend.position = "right")
+      theme_minimal()
   })
   
-  # Render dynamic sensor-specific plots
-  output$sensorPlots <- renderUI({
-    if (is.null(clicked_sensor())) {
-      return(h3("Click on a sensor on the map to view its data."))
-    }
+  output$linePlot <- renderPlot({
+    sensor_name <- hovered_transect()
+    line_data <- data %>% arrange(date_time_hst)
     
-    sensor_name <- clicked_sensor()
-    plotlyOutput(paste0("plot_", sensor_name))
-  })
-  
-  observe({
-    sensor_name <- clicked_sensor()
-    if (!is.null(sensor_name)) {
-      output[[paste0("plot_", sensor_name)]] <- renderPlotly({
-        sensor_data <- data %>% filter(site_specific == sensor_name)
-        
-        line_plot <- ggplot(sensor_data, aes(x = date_time_hst, y = value)) +
-          geom_line(color = "blue", size = 0.2) +
-          labs(
-            title = paste("Data for Sensor:", sensor_name),
-            x = "Date and Time",
-            y = paste(input$variable, "(units)")
-          ) +
-          theme_minimal()
-        ggplotly(line_plot)
-      })
-    }
+    line_data <- line_data %>%
+      mutate(highlight = ifelse(site_specific == sensor_name, "Highlighted", "Other"))
+    
+    ggplot(line_data, aes(x = date_time_hst, y = value, group = site_specific, color = highlight)) +
+      geom_line(size = 1) +
+      scale_color_manual(values = c("Highlighted" = "steelblue", "Other" = "grey")) +
+      labs(
+        title = "Temperature Change Over Time",
+        subtitle = if (!is.null(sensor_name)) paste("Hovered Sensor:", sensor_name) else "Hover over a sensor line to highlight",
+        x = "Date and Time",
+        y = "Temperature (°C)"
+      ) +
+      theme_minimal()
   })
 }
 
