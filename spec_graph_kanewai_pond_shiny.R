@@ -7,6 +7,7 @@ library(here)
 library(magick)
 library(grid)
 library(plotly)
+library(shinyWidgets)
 
 # Load the original fishpond image
 pond_image <- image_read("kanewai_aerial.png")
@@ -15,8 +16,8 @@ pond_image_raster <- as.raster(pond_image)  # Convert to raster format
 # Define coordinates for each sensor location (based on the new coordinate system)
 sensor_data <- data.frame(
   site_specific = c("Norfolk", "Shade", "Auwai", "RockWall", "Rock", "Springledge"),
-  x = c(0.5, 4, 5.2, 6.4, 5.5, 5.75),  # Adjusted X-coordinates within the range 0-10
-  y = c(0.5, 8.4, 9, 8.5, 6.5, 3.45)  # Adjusted Y-coordinates within the range 0-10
+  x = c(0.5, 4, 5.2, 6.4, 5.5, 5.75),
+  y = c(0.5, 8.4, 9, 8.5, 6.5, 3.45)
 )
 
 # Set the radius for each sensor circle (adjust as needed)
@@ -35,20 +36,23 @@ ui <- fluidPage(
   titlePanel("Fishpond Sensor Data Visualization"),
   sidebarLayout(
     sidebarPanel(
-      sliderInput(
+      airDatepickerInput(
         "date_time_hst",
         "Select Date and Time:",
-        min = min(data$date_time_hst),
-        max = max(data$date_time_hst),
+        minDate = min(data$date_time_hst),
+        maxDate = max(data$date_time_hst),
         value = min(data$date_time_hst),
-        timeFormat = "%Y-%m-%d %H:%M:%S",
-        step = 600  # 10-minute increments
+        timepicker = TRUE
       ),
       selectInput(
         "variable",
         "Select Variable:",
         choices = unique(data$variable)
-      )
+      ),
+      sliderInput("alpha_selected", "Transparency (Selected Sensor):", 
+                  min = 0, max = 1, value = 0.6, step = 0.1),
+      sliderInput("alpha_unselected", "Transparency (Unselected Sensors):", 
+                  min = 0, max = 1, value = 0.3, step = 0.1)
     ),
     mainPanel(
       plotOutput("pondImagePlot", click = "map_click", width = "100%", height = "600px"),
@@ -116,16 +120,29 @@ server <- function(input, output, session) {
     sensor_name <- clicked_sensor()
     if (!is.null(sensor_name)) {
       output[[paste0("plot_", sensor_name)]] <- renderPlotly({
-        sensor_data <- data %>% filter(site_specific == sensor_name)
+        sensor_data_combined <- data %>%
+          mutate(order = ifelse(site_specific == sensor_name, 2, 1)) %>%
+          arrange(order, date_time_hst)
         
-        line_plot <- ggplot(sensor_data, aes(x = date_time_hst, y = value)) +
-          geom_line(color = "blue", size = 0.2) +
-          labs(
-            title = paste("Data for Sensor:", sensor_name),
-            x = "Date and Time",
-            y = paste(input$variable, "(units)")
-          ) +
+        line_plot <- ggplot(sensor_data_combined) +
+          # Background: Unselected sensors (gray, adjustable transparency)
+          geom_line(data = sensor_data_combined %>% filter(site_specific != sensor_name),
+                    aes(x = date_time_hst, y = value, group = site_specific),
+                    color = "grey", alpha = input$alpha_unselected, size = 0.4) +
+          
+          # Foreground: Selected sensor (colored, adjustable transparency)
+          geom_line(data = sensor_data_combined %>% filter(site_specific == sensor_name),
+                    aes(x = date_time_hst, y = value, color = site_specific),
+                    alpha = input$alpha_selected, size = 0.4) +
+          
+          scale_color_manual(values = c("Norfolk" = "blue", "Shade" = "red", 
+                                        "Auwai" = "green", "RockWall" = "purple", 
+                                        "Rock" = "orange", "Springledge" = "brown")) +
+          
+          labs(title = paste("Data for Sensor:", sensor_name),
+               x = "Date and Time", y = paste(input$variable, "(units)")) +
           theme_minimal()
+        
         ggplotly(line_plot)
       })
     }

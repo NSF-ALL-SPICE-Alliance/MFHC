@@ -10,7 +10,7 @@ library(plotly)
 library(shinyWidgets)
 
 # Load the original fishpond image
-pond_image <- image_read("new_kalauhaihai_aerial.JPG")
+pond_image <- image_read("new_kalauhaihai_aerial.png")
 pond_image_raster <- as.raster(pond_image)  # Convert to raster format
 
 # Define coordinates for each sensor location
@@ -88,7 +88,7 @@ server <- function(input, output, session) {
     ggplot() +
       annotation_raster(
         pond_image_raster, 
-        xmin = 0, xmax = 10, ymin = 0, ymax = 10 / aspect_ratio
+        xmin = 0, xmax = 15, ymin = 0, ymax = 15 / aspect_ratio
       ) +
       geom_circle(
         data = pond_data,
@@ -128,12 +128,12 @@ server <- function(input, output, session) {
         # Background: Non-selected sensor (grey, more transparent)
         geom_line(data = sensor_data_combined %>% filter(site_specific != sensor_name),
                   aes(x = date_time_hst, y = value, group = site_specific),
-                  color = "grey", alpha = 0.3, size = 0.7) +  
+                  color = "grey", alpha = 0.8, size = 0.4) +  
         
         # Foreground: Selected sensor (colored, semi-transparent)
         geom_line(data = sensor_data_combined %>% filter(site_specific == sensor_name),
-                  aes(x = date_time_hst, y = value, color = site_specific, alpha = 0.7),
-                  size = 1.5) +  
+                  aes(x = date_time_hst, y = value, color = site_specific, alpha = 0.6),
+                  size = 0.4) +  
         
         labs(
           title = "Temperature Data for Garage and Makaha Sensors",
