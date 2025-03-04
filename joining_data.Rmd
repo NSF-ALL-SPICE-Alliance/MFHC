@@ -37,6 +37,12 @@ all_data_pivot <- all_data %>%
   filter(!is.na(value))
 ```
 
+
+```{r}
+all_data_pivot_dupe <- all_data_pivot %>%
+  distinct(date_time_hst, site, site_specific, variable, .keep_all = TRUE)
+```
+
 ```{r}
 all_data_pivot %>%
   group_by(site, site_specific, variable) %>%
@@ -47,15 +53,15 @@ all_data_pivot %>%
 #write a for loop checking for n/a in site_specific column and replacing them with the character "test". the data set is called all_data_pivot
 
 # Assuming all_data_pivot is your data frame
-for (i in 1:nrow(all_data_pivot)) {
-  if (is.na(all_data_pivot[i, "site_specific"])) {
-    all_data_pivot[i, "site_specific"] <- "General"
+for (i in 1:nrow(all_data_pivot_dupe)) {
+  if (is.na(all_data_pivot_dupe[i, "site_specific"])) {
+    all_data_pivot_dupe[i, "site_specific"] <- "General"
   }
 }
 
 ```
 
 ```{r}
-write_csv(all_data_pivot, here("cleaned_data/master_data_pivot.csv"))
+write_csv(all_data_pivot_dupe, here("cleaned_data/master_data_pivot.csv"))
 ```
 
