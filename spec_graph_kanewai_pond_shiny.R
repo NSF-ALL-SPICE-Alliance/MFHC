@@ -8,19 +8,20 @@ library(magick)
 library(grid)
 library(plotly)
 library(shinyWidgets)
+library(shinycssloaders)  # Loading spinner package
 
 # Load the original fishpond image
 pond_image <- image_read("kanewai_aerial.png")
 pond_image_raster <- as.raster(pond_image)  # Convert to raster format
 
-# Define coordinates for each sensor location (based on the new coordinate system)
+# Define coordinates for each sensor location
 sensor_data <- data.frame(
   site_specific = c("Norfolk", "Shade", "Auwai", "RockWall", "Rock", "Springledge"),
   x = c(0.5, 4, 5.2, 6.4, 5.5, 5.75),
   y = c(0.5, 8.4, 9, 8.5, 6.5, 3.45)
 )
 
-# Set the radius for each sensor circle (adjust as needed)
+# Set the radius for each sensor circle
 sensor_data$radius <- 0.3
 
 # Read in variable data and merge with sensor data
@@ -55,7 +56,7 @@ ui <- fluidPage(
                   min = 0, max = 1, value = 0.3, step = 0.1)
     ),
     mainPanel(
-      plotOutput("pondImagePlot", click = "map_click", width = "100%", height = "600px"),
+      withSpinner(plotOutput("pondImagePlot", click = "map_click", width = "100%", height = "600px")), # Loading spinner
       uiOutput("sensorPlots")
     )
   )
@@ -80,7 +81,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # Render the pond map with sensors
+  # Render the pond map with sensors and labels above circles
   output$pondImagePlot <- renderPlot({
     pond_data <- filtered_data()
     
@@ -103,17 +104,26 @@ server <- function(input, output, session) {
         y = "Pond Y-Coordinate"
       ) +
       theme_minimal() +
-      theme(legend.position = "right")
+      theme(legend.position = "right") +
+      
+      # Add sensor labels above the circle with white font
+      geom_text(
+        data = pond_data,
+        aes(x = x, y = y + 0.40, label = site_specific),  # Adjust y-position for above the circle
+        color = "white",  # White font
+        size = 4,  # Adjust the size as needed
+        fontface = "bold"  # Bold text for better visibility
+      )
   })
   
-  # Render dynamic sensor-specific plots
+  # Render dynamic sensor-specific plots with loading spinner
   output$sensorPlots <- renderUI({
     if (is.null(clicked_sensor())) {
       return(h3("Click on a sensor on the map to view its data."))
     }
     
     sensor_name <- clicked_sensor()
-    plotlyOutput(paste0("plot_", sensor_name))
+    withSpinner(plotlyOutput(paste0("plot_", sensor_name)))  # Loading spinner added
   })
   
   observe({
