@@ -50,19 +50,19 @@ ui <- page_sidebar(
     
     card(card_header(),
          plotlyOutput("linePlot")
-                      
-  # card(card_header("Output"),
-  #      plotOutput("linePlot",
-  #      dblclick = "linePlot_dblclick",
-  #      brush = brushOpts(
-  #        id = "linePlot_brush",
-  #        resetOnNew = TRUE
-       
-      
-  ),
-  
-  col_widths = c(12) 
- )
+         
+         # card(card_header("Output"),
+         #      plotOutput("linePlot",
+         #      dblclick = "linePlot_dblclick",
+         #      brush = brushOpts(
+         #        id = "linePlot_brush",
+         #        resetOnNew = TRUE
+         
+         
+    ),
+    
+    col_widths = c(12) 
+  )
 )
 
 server <- function(input, output, session) {
