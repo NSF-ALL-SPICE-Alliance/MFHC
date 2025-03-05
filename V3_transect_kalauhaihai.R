@@ -9,6 +9,8 @@ library(grid)
 library(plotly)
 library(shinyWidgets)
 
+#testing
+
 # Load the original fishpond image
 pond_image <- image_read("new_kalauhaihai_aerial.png")
 pond_image_raster <- as.raster(pond_image)  # Convert to raster format
