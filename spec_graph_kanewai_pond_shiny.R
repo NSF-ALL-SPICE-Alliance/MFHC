@@ -27,7 +27,7 @@ sensor_data$radius <- 0.3
 # Read in variable data and merge with sensor data
 data <- read_csv(here("cleaned_data/master_data_pivot.csv"))
 data <- full_join(sensor_data, data, by = "site_specific") %>%
-  filter(variable == "temperature" & site == "Kanewai")
+  filter(site == "Kanewai")  # Keep all variables for Kanewai
 
 # Ensure no missing data for the selected variable
 sum(is.na(data))
@@ -44,30 +44,23 @@ ui <- fluidPage(
         maxDate = max(data$date_time_hst),
         value = min(data$date_time_hst),
         timepicker = TRUE
-      ),
-      selectInput(
-        "variable",
-        "Select Variable:",
-        choices = unique(data$variable)
-      ),
-      sliderInput("alpha_selected", "Transparency (Selected Sensor):", 
-                  min = 0, max = 1, value = 0.6, step = 0.1),
-      sliderInput("alpha_unselected", "Transparency (Unselected Sensors):", 
-                  min = 0, max = 1, value = 0.3, step = 0.1)
+      )
     ),
     mainPanel(
       withSpinner(plotOutput("pondImagePlot", click = "map_click", width = "100%", height = "600px")), # Loading spinner
-      uiOutput("sensorPlots")
+      uiOutput("sensorPlots"),
+      plotlyOutput("kanewai_pH"),  # New pH graph
+      plotlyOutput("kanewai_oxygen")  # New Oxygen graph
     )
   )
 )
 
 # Shiny app server logic
 server <- function(input, output, session) {
-  # Reactive data filtered by date and variable
+  # Reactive data filtered by date
   filtered_data <- reactive({
     data %>%
-      filter(date_time_hst == input$date_time_hst, variable == input$variable) %>%
+      filter(date_time_hst == input$date_time_hst) %>%
       select(site_specific, value, variable, date_time_hst) %>%
       right_join(sensor_data, by = "site_specific")
   })
@@ -135,27 +128,52 @@ server <- function(input, output, session) {
           arrange(order, date_time_hst)
         
         line_plot <- ggplot(sensor_data_combined) +
-          # Background: Unselected sensors (gray, adjustable transparency)
           geom_line(data = sensor_data_combined %>% filter(site_specific != sensor_name),
                     aes(x = date_time_hst, y = value, group = site_specific),
-                    color = "grey", alpha = input$alpha_unselected, size = 0.4) +
-          
-          # Foreground: Selected sensor (colored, adjustable transparency)
+                    color = "grey", size = 0.4, alpha = 0.3) +  # Adjust transparency for non-selected sensors
           geom_line(data = sensor_data_combined %>% filter(site_specific == sensor_name),
                     aes(x = date_time_hst, y = value, color = site_specific),
-                    alpha = input$alpha_selected, size = 0.4) +
+                    size = 0.8, alpha = 0.5) +
           
           scale_color_manual(values = c("Norfolk" = "blue", "Shade" = "red", 
                                         "Auwai" = "green", "RockWall" = "purple", 
                                         "Rock" = "orange", "Springledge" = "brown")) +
           
-          labs(title = paste("Data for Sensor:", sensor_name),
-               x = "Date and Time", y = paste(input$variable, "(units)")) +
+          labs(title = paste("Kanewai Temperature:", sensor_name),
+               x = "Date and Time", y = "Value") +
           theme_minimal()
         
         ggplotly(line_plot)
       })
     }
+  })
+  
+  # Render the Kanewai pH graph
+  output$kanewai_pH <- renderPlotly({
+    kanewai_pH <- data %>%
+      filter(variable == "pH")
+    
+    p2 <- ggplot(kanewai_pH, aes(x = date_time_hst, y = value)) +
+      geom_line(size = 0.5, color = "darkgreen") +
+      labs(title = "Kanewai pH",
+           x = "Date and Time", y = "pH Level") +
+      theme_minimal()
+    
+    ggplotly(p2)
+  })
+  
+  # Render the Kanewai Oxygen graph
+  output$kanewai_oxygen <- renderPlotly({
+    kanewai_oxygen <- data %>%
+      filter(variable == "oxygen")
+    
+    p3 <- ggplot(kanewai_oxygen, aes(x = date_time_hst, y = value)) +
+      geom_line(size = 0.5, color = "darkblue") +
+      labs(title = "Kanewai Oxygen",
+           x = "Date and Time", y = "Oxygen (mg/L)") +
+      theme_minimal()
+    
+    ggplotly(p3)
   })
 }
 
