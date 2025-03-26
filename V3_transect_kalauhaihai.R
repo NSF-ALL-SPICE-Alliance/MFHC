@@ -8,8 +8,7 @@ library(magick)
 library(grid)
 library(plotly)
 library(shinyWidgets)
-
-#testing
+library(shinycssloaders)  # Added loading spinner package
 
 # Load the original fishpond image
 pond_image <- image_read("new_kalauhaihai_aerial.png")
@@ -49,8 +48,8 @@ ui <- fluidPage(
       )
     ),
     mainPanel(
-      plotOutput("pondImagePlot", click = "map_click", width = "100%", height = "600px"),
-      uiOutput("sensorPlots")
+      withSpinner(plotOutput("pondImagePlot", click = "map_click", width = "100%", height = "600px")), # Loading spinner added
+      uiOutput("sensorPlots") # The sensorPlots output already contains a spinner within renderUI
     )
   )
 )
@@ -98,6 +97,13 @@ server <- function(input, output, session) {
         color = "black",
         alpha = 0.7
       ) +
+      geom_text(  # Added sensor labels with white font
+        data = sensor_data,
+        aes(x = x, y = y + 0.5, label = site_specific),
+        color = "white",
+        fontface = "bold",
+        size = 5
+      ) +
       scale_fill_viridis_c(name = "Temperature (°C)", option = "C") +
       labs(
         title = "Pond Sensor Locations Colored by Value",
@@ -108,7 +114,8 @@ server <- function(input, output, session) {
       theme(legend.position = "right")
   }, width = 600, height = 600) 
   
-  # Render dynamic sensor-specific plots
+  
+  # Render dynamic sensor-specific plots with loading spinner
   output$sensorPlots <- renderUI({
     if (is.null(clicked_sensor())) {
       return(h3("Click on a sensor on the map to view its data."))
@@ -116,41 +123,45 @@ server <- function(input, output, session) {
     
     sensor_name <- clicked_sensor()  # Get selected sensor
     
-    output$plot_combined <- renderPlotly({
-      sensor_data_combined <- data %>% 
-        filter(site_specific %in% c("Garage", "Makaha"))
-      
-      # Reorder data so the selected sensor is plotted last (on top)
-      sensor_data_combined <- sensor_data_combined %>%
-        mutate(order = ifelse(site_specific == sensor_name, 2, 1)) %>%
-        arrange(order, date_time_hst)
-      
-      # Line plot with transparency effect
-      line_plot <- ggplot() +
-        # Background: Non-selected sensor (grey, more transparent)
-        geom_line(data = sensor_data_combined %>% filter(site_specific != sensor_name),
-                  aes(x = date_time_hst, y = value, group = site_specific),
-                  color = "grey", alpha = 0.8, size = 0.4) +  
+    withSpinner(plotlyOutput("plot_combined"))  # Added loading spinner here
+  })
+  
+  observe({
+    sensor_name <- clicked_sensor()
+    if (!is.null(sensor_name)) {
+      output$plot_combined <- renderPlotly({
+        sensor_data_combined <- data %>% 
+          filter(site_specific %in% c("Garage", "Makaha"))
         
-        # Foreground: Selected sensor (colored, semi-transparent)
-        geom_line(data = sensor_data_combined %>% filter(site_specific == sensor_name),
-                  aes(x = date_time_hst, y = value, color = site_specific, alpha = 0.6),
-                  size = 0.4) +  
+        # Reorder data so the selected sensor is plotted last (on top)
+        sensor_data_combined <- sensor_data_combined %>%
+          mutate(order = ifelse(site_specific == sensor_name, 2, 1)) %>%
+          arrange(order, date_time_hst)
         
-        labs(
-          title = "Temperature Data for Garage and Makaha Sensors",
-          x = "Date and Time",
-          y = paste(input$variable, "(units)")
-        ) +
-        scale_color_manual(values = c("Garage" = "blue", "Makaha" = "red")) +
-        scale_alpha_identity() +  # Ensures transparency is applied
-        theme_minimal()
-      
-      ggplotly(line_plot)
-    })
-    
-    # Return the plot
-    return(plotlyOutput("plot_combined"))
+        # Line plot with transparency effect
+        line_plot <- ggplot() +
+          # Background: Non-selected sensor (grey, more transparent)
+          geom_line(data = sensor_data_combined %>% filter(site_specific != sensor_name),
+                    aes(x = date_time_hst, y = value, group = site_specific),
+                    color = "grey", alpha = 0.8, size = 0.4) +  
+          
+          # Foreground: Selected sensor (colored, semi-transparent)
+          geom_line(data = sensor_data_combined %>% filter(site_specific == sensor_name),
+                    aes(x = date_time_hst, y = value, color = site_specific, alpha = 0.6),
+                    size = 0.4) +  
+          
+          labs(
+            title = "Temperature Data for Garage and Makaha Sensors",
+            x = "Date and Time",
+            y = paste(input$variable, "(units)")
+          ) +
+          scale_color_manual(values = c("Garage" = "blue", "Makaha" = "red")) +
+          scale_alpha_identity() +  # Ensures transparency is applied
+          theme_minimal()
+        
+        ggplotly(line_plot)
+      })
+    }
   })
 }
 
