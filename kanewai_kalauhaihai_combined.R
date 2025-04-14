@@ -44,6 +44,7 @@ ui <- fluidPage(
     tabPanel("Kanewai",
              sidebarLayout(
                sidebarPanel(
+                 switchInput("temp_unit_kanewai", value = FALSE, onLabel = "°F", offLabel = "°C"),
                  airDatepickerInput("date_time_hst_kanewai", "Select Date and Time:",
                                     minDate = min(data$date_time_hst),
                                     maxDate = max(data$date_time_hst),
@@ -61,6 +62,7 @@ ui <- fluidPage(
     tabPanel("Kalauhaihai",
              sidebarLayout(
                sidebarPanel(
+                 switchInput("temp_unit_kalauhaihai", value = FALSE, onLabel = "°F", offLabel = "°C"),
                  airDatepickerInput("date_time_hst_kalauhaihai", "Select Date and Time:",
                                     minDate = min(data$date_time_hst),
                                     maxDate = max(data$date_time_hst),
@@ -86,6 +88,14 @@ server <- function(input, output, session) {
       right_join(kanewai_sensors, by = "site_specific")
   })
   
+  kanewai_temp_data <- reactive({
+    df <- kanewai_data()
+    if (input$temp_unit_kanewai) {
+      df <- df %>% mutate(value = value * 9/5 + 32)
+    }
+    df
+  })
+  
   kanewai_clicked_sensor <- reactiveVal(NULL)
   observeEvent(input$kanewai_click, {
     clicked <- nearPoints(kanewai_sensors, input$kanewai_click, xvar = "x", yvar = "y", maxpoints = 1)
@@ -95,7 +105,7 @@ server <- function(input, output, session) {
   })
   
   output$kanewai_map <- renderPlot({
-    pond_data <- kanewai_data()
+    pond_data <- kanewai_temp_data()
     
     ggplot() +
       annotation_raster(kanewai_image_raster, xmin = 0, xmax = 10, ymin = 0, ymax = 10) +
@@ -103,13 +113,13 @@ server <- function(input, output, session) {
                   color = "black", alpha = 0.7) +
       geom_text(data = pond_data, aes(x = x, y = y + 0.4, label = site_specific),
                 color = "white", size = 4, fontface = "bold") +
-      scale_fill_viridis_c(name = "Temperature (°C)", option = "C") +
+      scale_fill_viridis_c(
+        name = if (input$temp_unit_kanewai) "Temperature (°F)" else "Temperature (°C)",
+        option = "C"
+      ) +
       coord_fixed() + theme_minimal() + theme(legend.position = "right") +
-      labs(
-        title = "Temperature Map (Select a sensor for temp graph)",
-        x = "Pond X-Coordinate",  # Label for X-axis
-        y = "Pond Y-Coordinate"   # Label for Y-axis
-      )
+      labs(title = "Temperature Map (Select a sensor for temp graph)",
+           x = "Pond X-Coordinate", y = "Pond Y-Coordinate")
   })
   
   output$kanewai_sensor_plots <- renderUI({
@@ -123,6 +133,7 @@ server <- function(input, output, session) {
       output$kanewai_temperature_plot <- renderPlotly({
         sensor_data_combined <- data %>%
           filter(site == "Kanewai", variable == "temperature", site_specific != "general") %>%
+          mutate(value = if (input$temp_unit_kanewai) value * 9/5 + 32 else value) %>%
           mutate(order = ifelse(site_specific == sensor_name, 2, 1)) %>%
           arrange(order, date_time_hst)
         
@@ -136,7 +147,9 @@ server <- function(input, output, session) {
           scale_color_manual(values = c("Norfolk" = "blue", "Shade" = "red", 
                                         "Auwai" = "green", "RockWall" = "purple", 
                                         "Rock" = "orange", "Springledge" = "brown")) +
-          labs(title = paste("Kanewai Temperature:", sensor_name), x = "Date and Time", y = "Value") +
+          labs(title = paste("Kanewai Temperature:", sensor_name),
+               x = "Date and Time",
+               y = if (input$temp_unit_kanewai) "Temperature (°F)" else "Temperature (°C)") +
           theme_minimal()
         
         ggplotly(line_plot)
@@ -167,6 +180,14 @@ server <- function(input, output, session) {
       right_join(kalauhaihai_sensors, by = "site_specific")
   })
   
+  kalauhaihai_temp_data <- reactive({
+    df <- kalauhaihai_data()
+    if (input$temp_unit_kalauhaihai) {
+      df <- df %>% mutate(value = value * 9/5 + 32)
+    }
+    df
+  })
+  
   kalauhaihai_clicked_sensor <- reactiveVal(NULL)
   observeEvent(input$kalauhaihai_click, {
     clicked <- nearPoints(kalauhaihai_sensors, input$kalauhaihai_click, xvar = "x", yvar = "y", maxpoints = 1)
@@ -176,7 +197,7 @@ server <- function(input, output, session) {
   })
   
   output$kalauhaihai_map <- renderPlot({
-    pond_data <- kalauhaihai_data()
+    pond_data <- kalauhaihai_temp_data()
     
     ggplot() +
       annotation_raster(kalauhaihai_image_raster, xmin = 0, xmax = 10, ymin = 0, ymax = 10) +
@@ -184,13 +205,13 @@ server <- function(input, output, session) {
                   color = "black", alpha = 0.7) +
       geom_text(data = pond_data, aes(x = x, y = y + 0.4, label = site_specific),
                 color = "white", size = 4, fontface = "bold") +
-      scale_fill_viridis_c(name = "Temperature (°C)", option = "C") +
+      scale_fill_viridis_c(
+        name = if (input$temp_unit_kalauhaihai) "Temperature (°F)" else "Temperature (°C)",
+        option = "C"
+      ) +
       coord_fixed() + theme_minimal() + theme(legend.position = "right") +
-      labs(
-        title = "Temperature Map (Select sensor for temp graph)",
-        x = "Pond X-Coordinate",  # Label for X-axis
-        y = "Pond Y-Coordinate"   # Label for Y-axis
-      )
+      labs(title = "Temperature Map (Select sensor for temp graph)",
+           x = "Pond X-Coordinate", y = "Pond Y-Coordinate")
   })
   
   output$kalauhaihai_sensor_plots <- renderUI({
@@ -206,6 +227,7 @@ server <- function(input, output, session) {
       output$kalauhaihai_temperature_plot <- renderPlotly({
         sensor_data_combined <- data %>%
           filter(site == "Kalauhaihai", variable == "temperature", !site_specific %in% c("general", "Auwai", "Coconut")) %>%
+          mutate(value = if (input$temp_unit_kalauhaihai) value * 9/5 + 32 else value) %>%
           mutate(order = ifelse(site_specific == sensor_name, 2, 1)) %>%
           arrange(order, date_time_hst)
         
@@ -217,7 +239,9 @@ server <- function(input, output, session) {
                     aes(x = date_time_hst, y = value, color = site_specific),
                     size = 0.8, alpha = 0.5) +
           scale_color_manual(values = c("Garage" = "blue", "Makaha" = "red")) +
-          labs(title = paste("Kalauhaihai Temperature:", sensor_name), x = "Date and Time", y = "Value") +
+          labs(title = paste("Kalauhaihai Temperature:", sensor_name),
+               x = "Date and Time",
+               y = if (input$temp_unit_kalauhaihai) "Temperature (°F)" else "Temperature (°C)") +
           theme_minimal()
         
         ggplotly(line_plot)
