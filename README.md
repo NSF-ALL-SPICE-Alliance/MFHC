@@ -1,4 +1,7 @@
-# Welcome to our Maunalua Fishpond Heritage Center Dashboard and Analysis Repository!
+# Welcome to the Maunalua Analytics for Stewardship and Tracking (MAST) Repository!
+
+![MAST](https://github.com/user-attachments/assets/118080b7-4e40-4109-858a-43452b18286e)
+
 
 <img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/79951e4f-d012-47aa-b917-e1aea2179957" alt="SpiceLogo1" width="200" height="75">
 
@@ -7,32 +10,27 @@
 <img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/a2fc9fd6-ea5a-4e7d-ad61-52f3d0951dd6" alt="cuh_logo" width="125" height="100">
 
 
-### About
+## 🌺 Project Overview
 
-From the [Maunalua Fishpond Heritage Center Website](https://maunaluafishpond.org/): 
+This project is a collaboration between **Chris Cramer**, founder and Executive Director of the [Maunalua Fishpond Heritage Center](https://maunaluafishpond.org/), and **Dr. Lupita Ruiz Jones**, [Assistant Professor of Environmental Science at Chaminade University](https://lupita-ruiz-jones.squarespace.com/).
 
-"Nearly all of Hawai‘i’s freshwater springs have disappeared – many filled in for development, ending the fresh and salt water connection that is critical to the life cycle of many native species. In Kuli‘ou‘ou, we had a rare opportunity to permanently protect a fertile estuary that is home to rare freshwater limpets pipiwai and hapawai that cling to the Hawaiian drystack wall lining the spring, ‘ama‘ama (mullet) and āholehole (young Hawaiian flagtail) that feed on the prized green limu ‘ele‘ele that blankets the spring floor, native shrimp ‘opae ‘oeha‘a and ‘opae huna, and endangered ‘ae‘o (Hawaiian stilts) that feed in Kānewai Fishpond. This effort also protects the many cultural sites surrounding the spring including the mākāhā (fishpond sluice gate), and kū‘ula (fishing stone shrine) with an upright Kū stone balanced by a low Hina stone where the fishermen of old would have given offerings asking for a plentiful catch."
+### 👩🏽‍🔬 Student Researchers
 
-### Goal of this Work
+Under the mentorship of Dr. Lupita Ruiz Jones and supported by the [Louis Stokes Alliances for Minority Participation (LSAMP)](https://www.nsf.gov/funding/opportunities/lsamp-louis-stokes-alliances-minority-participation):
 
-Clean, Analyze, and share data from Kalauhaʻihaʻi and Kānewai with the MFHC Team and surrounding community
+- Hina Ioane  
+- Kate Dugger
 
-The primary product is a Shiny Dashboard that displays pH, oxygen, conductivity, and temperature data collected by [Dr. Lupita](https://lupita-ruiz-jones.squarespace.com/) and students in the Chaminade University of Honolulu Environmental Science Dept from Kalauhaʻihaʻi and Kānewai
+Under the mentorship of [Connor Flynn](https://connorflynn.github.io/) and supported by the [NSF INCLUDES Alliance Supporting Pacific Impact through Computational Excellence (All-SPICE)](https://www.nsfspicealliance.org/):
+
+- Anson Ekau  
+- Brandon Koskie
+
+All data and code is publicly available via the project’s [GitHub repository](https://github.com/NSF-ALL-SPICE-Alliance/MFHC).
+
+---
 
 
-[Beta Dashboard](https://connorflynn.shinyapps.io/maunalua-fishpond-heritage-center/?_ga=2.191367721.2028241035.1678747718-1779377801.1678413849#section-kalauhaihai)
-
-**Students**
-
-[Anson Ekau](https://github.com/aekau21)
-
-[Brandon Kioske](https://github.com/BrandonKoskie)
-
-[Hina Ioane](https://github.com/Hinaioane)
-
-**Mentor**
-
-[Connor Flynn](https://github.com/ConnorFlynn)
 
 
 ![anson_gif](https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/ec7c1917-672c-4071-b319-eeb4f2ffade8)
