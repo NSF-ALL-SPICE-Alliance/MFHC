@@ -70,7 +70,7 @@ system_prompt_str <- paste0(
 )
 
 greeting <- paste0(
-  "👋 **Hi, I'm the MAST Chatbot!** 🌊\n\n",
+  "👋 **Hi, I'm an AI Chatbot!** 🌊\n\n",
   "I can help you explore and analyze sensor data in this app from Kanewai Spring and Kalauhaihai Fishpond.\n\n",
   "**Ask me questions about:**\n\n",
   "✅ **Sensor readings**\n",
