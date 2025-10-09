@@ -3,6 +3,9 @@ title: "temperature_clean_test"
 author: "Anson Ekau"
 date: "2024-05-30"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -13,8 +16,11 @@ library(janitor) #Used to clean names
 library(plotly) #Used to make ggplots interactive
 ```
 
-#Set up
-The "Set Up" sections sets the working directory using the here() function. It also defines the path to the raw data folder and the specific variable folder. Inside the variable folders are the raw data files. 
+#Set up The "Set Up" sections sets the working directory using the
+here() function. It also defines the path to the raw data folder and the
+specific variable folder. Inside the variable folders are the raw data
+files.
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 # Set the working directory to the project root folder
@@ -32,8 +38,11 @@ site_names <- c("Garage", "Makaha", "Auwai", "Norfolk", "Highway", "Shade", "Oct
 
 ```
 
-#Define Read and Clean Function
-The following chunk creates a function using loops to read in the raw data files. The files come in .txt and .csv. This is important to note because reading in these files uses different functions and specific arguments need to be set to read them in correctly. 
+#Define Read and Clean Function The following chunk creates a function
+using loops to read in the raw data files. The files come in .txt and
+.csv. This is important to note because reading in these files uses
+different functions and specific arguments need to be set to read them
+in correctly.
 
 ```{r}
 # Define a function to read and clean the column names
@@ -65,11 +74,18 @@ read_and_clean_data <- function(file_path) {
 }
 ```
 
-#Reading in and cleaning
-The following section is reading in the data and cleaning it. Again using loops the data is read in using the function created in the previous section. After a 'site' column is added that species which location the data comes from. It also renames certain columns to clean and combine them more efficiently. The classes of the columns are also changed to the correct class so they work later in binding, trimming, and visualizing in the following sections. 
+#Reading in and cleaning The following section is reading in the data
+and cleaning it. Again using loops the data is read in using the
+function created in the previous section. After a 'site' column is added
+that species which location the data comes from. It also renames certain
+columns to clean and combine them more efficiently. The classes of the
+columns are also changed to the correct class so they work later in
+binding, trimming, and visualizing in the following sections.
 
-When reading in a text file there will most likely be separate date and time column. CSV files will have a combined date time column. Its important to check if there are multiple formats for the date time columns. 
-
+When reading in a text file there will most likely be separate date and
+time column. CSV files will have a combined date time column. Its
+important to check if there are multiple formats for the date time
+columns.
 
 ```{r message=FALSE, warning=FALSE}
 library(dplyr)
@@ -145,18 +161,22 @@ for (i in seq_along(file_list)) {
 
 ```
 
-#Trimming
-The following section is trimming the data and removing the times the loggers were out of the water. 
+#Trimming The following section is trimming the data and removing the
+times the loggers were out of the water.
 
-This is where manual input is needed. Manually add the new data name, and the specific time the logger was in and out of the water. Refer to the video for help in this section. 
+This is where manual input is needed. Manually add the new data name,
+and the specific time the logger was in and out of the water. Refer to
+the video for help in this section.
 
-Format:
-'replace this with the data name' <- 'replace this with the data name' %>% 
-  filter(date_time_hst >= "year-month-day hour:minute:sec" & date_time_hst <= "year-month-day hour:minute:sec)
-  
-Example: 
-data_temp_sept2021feb2022_kalauhaihaiauwaiunderbridge_20970094 <- data_temp_sept2021feb2022_kalauhaihaiauwaiunderbridge_20970094 %>% 
-  filter(date_time_hst >= "2021-09-13 13:00:00" & date_time_hst <= "2022-02-16 9:00:00")
+Format: 'replace this with the data name' \<- 'replace this with the
+data name' %\>% filter(date_time_hst \>= "year-month-day
+hour:minute:sec" & date_time_hst \<= "year-month-day hour:minute:sec)
+
+Example: data_temp_sept2021feb2022_kalauhaihaiauwaiunderbridge_20970094
+\<- data_temp_sept2021feb2022_kalauhaihaiauwaiunderbridge_20970094 %\>%
+filter(date_time_hst \>= "2021-09-13 13:00:00" & date_time_hst \<=
+"2022-02-16 9:00:00")
+
 ```{r}
 # Trimming
 data_temp_sept2021feb2022_kalauhaihaiauwaiunderbridge_20970094 <- data_temp_sept2021feb2022_kalauhaihaiauwaiunderbridge_20970094 %>% 
@@ -303,11 +323,13 @@ data_temp_febapr2024_kanewaispringledgemakaiend_21445022 <- data_temp_febapr2024
 data_temp_aprsept2024_kanewaispringledgemakaiend_20970093 <- data_temp_aprsept2024_kanewaispringledgemakaiend_20970093 %>% 
   filter(date_time_hst >= ymd_hms("2024-04-04 10:40:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-09-20 17:00:00", tz = "Pacific/Honolulu"))
 
+data_temp_sept2024feb2025_kalauhaihaimakaha_21445022 <- data_temp_sept2024feb2025_kalauhaihaimakaha_21445022 %>% 
+  filter(date_time_hst >= ymd_hms("2024-09-20 16:15:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-02-06 09:39:00", tz = "Pacific/Honolulu"))
 ```
 
+#Join Data This last section joins the data. One again manual input is
+needed. Add the new files separating by columns and new lines.
 
-#Join Data
-This last section joins the data. One again manual input is needed. Add the new files separating by columns and new lines. 
 ```{r}
 # join
 temperature_joined <- bind_rows(
@@ -357,12 +379,14 @@ data_temp_febapr2024_kalauhaihaimakaha_20970122,
 data_temp_febapr2024_kanewaiauwaiunderfootbridge_20970102,
 data_temp_febapr2024_kanewaifishpondedgenorfolk_20970107,
 data_temp_febapr2024_kanewairockstairsbywall_20970108,
-data_temp_febapr2024_kanewaispringledgemakaiend_21445022) %>% 
+data_temp_febapr2024_kanewaispringledgemakaiend_21445022,
+data_temp_sept2024feb2025_kalauhaihaimakaha_21445022) %>% 
   select(date_time_hst, temperature, site, site_specific)
 
 ```
 
 #Write CSV
+
 ```{r}
 write_csv(temperature_joined, here("cleaned_data/temp_joined.csv"))
 ```
