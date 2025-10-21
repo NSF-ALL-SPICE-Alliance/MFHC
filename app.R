@@ -87,10 +87,10 @@ greeting <- paste0(
 dbListTables(conn)
 
 # --- Images -------------------------------------------------------------------
-kanewai_image <- image_read("kanewai_aerial.png")
+kanewai_image <- image_read("DJI_0321.JPG")
 kanewai_image_raster <- as.raster(kanewai_image)
 
-kalauhaihai_image <- image_read("new_kalauhaihai_aerial.png")
+kalauhaihai_image <- image_read("DJI_0353.JPG")
 kalauhaihai_info <- image_info(kalauhaihai_image)
 img_width <- kalauhaihai_info$width
 img_height <- kalauhaihai_info$height
@@ -98,17 +98,17 @@ kalauhaihai_image_raster <- as.raster(kalauhaihai_image)
 
 # --- Sensor coordinates --------------------------------------------------------
 kanewai_sensors <- data.frame(
-  site_specific = c("Norfolk", "Shade", "Auwai", "RockWall", "Rock", "Springledge"),
-  x = c(0.5, 4, 5.2, 6.4, 5.5, 5.75),
-  y = c(0.5, 8.4, 9, 8.5, 6.5, 3.45),
+  site_specific = c("Norfolk", "Auwai", "RockWall", "Springledge"),
+  x = c(1, 8.5, 9, 6),
+  y = c(7.5, 3.45, 2, 2.5),
   radius = 0.3
 )
 
 kalauhaihai_sensors <- data.frame(
   site_specific = c("Garage", "Makaha"),
-  x = c(3.5, 6.5) * 5472 / 10,
-  y = c(7, 2) * 3648 / 10,
-  radius = 0.3 * 5472 / 10
+  x = c(900, 2750),
+  y = c(600, 1900),
+  radius = 120 
 )
 
 # --- Data ---------------------------------------------------------------------
@@ -319,9 +319,12 @@ server <- function(input, output, session) {
         name = if (input$temp_unit_kanewai) "Temperature (°F)" else "Temperature (°C)",
         option = "C"
       ) +
-      coord_fixed() + theme_minimal() + theme(legend.position = "right") +
+      # 🔑 Lock the plot limits to the image extents and remove padding
+      coord_fixed(xlim = c(0, 10), ylim = c(0, 10), expand = FALSE) +
+      theme_minimal() + theme(legend.position = "right") +
       labs(title = "Temperature Map (+ Click a sensor to see temperature over time 📈)", x = "", y = "")
   })
+  
   
   output$kanewai_sensor_plots <- renderUI({
     if (is.null(kanewai_clicked_sensor())) return(NULL)
@@ -518,13 +521,23 @@ server <- function(input, output, session) {
   # --- Maplibre overview ------------------------------------------------------
   output$hawaii_map <- renderMaplibre({
     maplibre(
-      style = carto_style("voyager"),
-      zoom = 0,
-      center = c(0, 0),
-      pitch = 0,
-      bearing = 0
-    )
+      style  = carto_style("positron-no-labels"),
+      center = c(-157.7319623, 21.2822266),
+      zoom   = 16
+    ) |>
+      add_raster_source(
+        id    = "esri_imagery",
+        tiles = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        tileSize = 256,
+        maxzoom  = 19
+      ) |>
+      add_raster_layer(
+        id     = "esri_imagery_layer",
+        source = "esri_imagery",
+        raster_opacity = 1
+      )
   })
+  
   
   observeEvent(input$hawaii_map_center, {
     maplibre_proxy("hawaii_map") |>
