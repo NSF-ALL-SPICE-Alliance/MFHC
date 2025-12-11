@@ -325,6 +325,61 @@ data_temp_aprsept2024_kanewaispringledgemakaiend_20970093 <- data_temp_aprsept20
 
 data_temp_sept2024feb2025_kalauhaihaimakaha_21445022 <- data_temp_sept2024feb2025_kalauhaihaimakaha_21445022 %>% 
   filter(date_time_hst >= ymd_hms("2024-09-20 16:15:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-02-06 09:39:00", tz = "Pacific/Honolulu"))
+
+
+data_temp_aprsept2024_kalauhaihaimakaha_20970115 <- data_temp_aprsept2024_kalauhaihaimakaha_20970115 %>% 
+  filter(date_time_hst >= ymd_hms("2024-04-04 10:00:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-09-20 16:10:00", tz = "Pacific/Honolulu"))
+
+
+data_temp_febapr2025_kalauhaihaimakaha_20970109 <- data_temp_febapr2025_kalauhaihaimakaha_20970109 %>% 
+  filter(date_time_hst >= ymd_hms("2025-02-06 9:39:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 9:56:00", tz = "Pacific/Honolulu"))
+
+data_temp_febapr2025_kalauhaihaigarage_20970094 <- data_temp_febapr2025_kalauhaihaigarage_20970094 %>% 
+  filter(date_time_hst >= ymd_hms("2025-02-06 9:36:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 9:45:00", tz = "Pacific/Honolulu"))
+
+
+data_temp_aprsept2024_kalauhaihaigarage_20970109 <- data_temp_aprsept2024_kalauhaihaigarage_20970109 %>% 
+  filter(date_time_hst >= ymd_hms("2024-04-02 9:44:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-09-20 15:45:00", tz = "Pacific/Honolulu"))
+
+data_temp_sept2024feb2025_kalauhaihaigarage_20970122 <- data_temp_sept2024feb2025_kalauhaihaigarage_20970122 %>% 
+  filter(date_time_hst >= ymd_hms("2024-09-20 16:00:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-02-06 9:20:00", tz = "Pacific/Honolulu"))
+
+data_temp_sept2024feb2025_kanewaispringledgemaukaend_20970092 <- data_temp_sept2024feb2025_kanewaispringledgemaukaend_20970092 %>% 
+  filter(date_time_hst >= ymd_hms("2024-09-20 17:10:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-02-06 10:35:00", tz = "Pacific/Honolulu"))
+
+data_temp_sept2024feb2025_kanewaifishpondedgenorfolk_20970108 <- data_temp_sept2024feb2025_kanewaifishpondedgenorfolk_20970108 %>% 
+  filter(date_time_hst >= ymd_hms("2024-09-20 17:20:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-02-06 10:42:00", tz = "Pacific/Honolulu"))
+
+
+data_temp_sept2024feb2025_kanewaiauwaiunderfootbridge_21445021 <- data_temp_sept2024feb2025_kanewaiauwaiunderfootbridge_21445021 %>% 
+  filter(date_time_hst >= ymd_hms("2024-09-20 17:00:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-02-06 10:26:00", tz = "Pacific/Honolulu"))
+
+data_temp_sept2024feb2025_kanewairockstairsbywall_20970102 <- data_temp_sept2024feb2025_kanewairockstairsbywall_20970102 %>% 
+  filter(date_time_hst >= ymd_hms("2024-09-20 16:55:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-02-06 10:20:00", tz = "Pacific/Honolulu"))
+
+data_temp_aprsept2024_kanewaiauwaiunderfootbridge_20970094 <- data_temp_aprsept2024_kanewaiauwaiunderfootbridge_20970094 %>% 
+  filter(date_time_hst >= ymd_hms("2024-04-04 10:38:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-09-20 16:55:00", tz = "Pacific/Honolulu"))
+
+data_temp_aprsept2024_kanewaifishpondedgenorfolk_21445020 <- data_temp_aprsept2024_kanewaifishpondedgenorfolk_21445020 %>% 
+  filter(date_time_hst >= ymd_hms("2024-04-04 10:44:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-09-20 17:15:00", tz = "Pacific/Honolulu"))
+
+data_temp_aprsept2024_kanewairockstairsbywall_20970123 <- data_temp_aprsept2024_kanewairockstairsbywall_20970123 %>% 
+  filter(date_time_hst >= ymd_hms("2024-04-04 10:33:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-09-20 16:50:00", tz = "Pacific/Honolulu"))
+
+data_temp_octnov2023_kanewaifishpondedgenorfolk_20970122 <- data_temp_octnov2023_kanewaifishpondedgenorfolk_20970122 %>% 
+  filter(date_time_hst >= ymd_hms("2023-10-05 10:18:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2023-11-02 10:37:00", tz = "Pacific/Honolulu"))
+
+
+data_temp_octnov2023_kanewairockstairsbywall_20970092 <- data_temp_octnov2023_kanewairockstairsbywall_20970092 %>% 
+  filter(date_time_hst >= ymd_hms("2023-10-05 10:25:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2023-11-02 10:05:00", tz = "Pacific/Honolulu"))
+
+
+data_temp_octnov2023_kanewaispringledge_21445019 <- data_temp_octnov2023_kanewaispringledge_21445019 %>% 
+  filter(date_time_hst >= ymd_hms("2023-10-05 10:12:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2023-11-02 10:22:00", tz = "Pacific/Honolulu"))
+
+
+
+
 ```
 
 #Join Data This last section joins the data. One again manual input is
@@ -380,7 +435,25 @@ data_temp_febapr2024_kanewaiauwaiunderfootbridge_20970102,
 data_temp_febapr2024_kanewaifishpondedgenorfolk_20970107,
 data_temp_febapr2024_kanewairockstairsbywall_20970108,
 data_temp_febapr2024_kanewaispringledgemakaiend_21445022,
-data_temp_sept2024feb2025_kalauhaihaimakaha_21445022) %>% 
+data_temp_sept2024feb2025_kalauhaihaimakaha_21445022,
+data_temp_aprsept2024_kalauhaihaimakaha_20970115,
+data_temp_febapr2025_kalauhaihaimakaha_20970109,
+data_temp_aprsept2024_kalauhaihaigarage_20970109,
+data_temp_sept2024feb2025_kalauhaihaigarage_20970122,
+data_temp_febapr2025_kalauhaihaigarage_20970094,
+data_temp_sept2024feb2025_kanewaispringledgemaukaend_20970092,
+data_temp_sept2024feb2025_kanewaifishpondedgenorfolk_20970108,
+data_temp_sept2024feb2025_kanewaiauwaiunderfootbridge_21445021,
+data_temp_sept2024feb2025_kanewairockstairsbywall_20970102,
+data_temp_aprsept2024_kanewaiauwaiunderfootbridge_20970094,
+data_temp_aprsept2024_kanewaifishpondedgenorfolk_21445020,
+data_temp_aprsept2024_kanewairockstairsbywall_20970123,
+data_temp_aprsept2024_kanewaispringledgemakaiend_20970093,
+data_temp_octnov2023_kanewaifishpondedgenorfolk_20970122,
+data_temp_octnov2023_kanewairockstairsbywall_20970092,
+data_temp_octnov2023_kanewaispringledge_21445019
+
+) %>% 
   select(date_time_hst, temperature, site, site_specific)
 
 ```
