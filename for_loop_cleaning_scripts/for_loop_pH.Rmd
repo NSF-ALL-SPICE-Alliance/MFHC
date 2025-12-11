@@ -70,46 +70,77 @@ The following chunk creates a function using loops to read in the raw data files
 When reading in a text file there will most likely be separate date and time column. CSV files will have a combined date time column. Its important to check if there are multiple formats for the date time columns.
 ```{r message=FALSE, warning=FALSE}
 
-# Loop through each file, read, and clean the data
+library(dplyr)
+library(lubridate)
+
 for (i in seq_along(file_list)) {
   data <- read_and_clean_data(file_list[i])
-  
-  # Add site location to files
-  if (grepl("Kalauhaihai", file_list[i])) {
+
+  # Add site location
+  if (grepl("Kalauhaihai", file_list[i], ignore.case = TRUE)) {
     data$site <- "Kalauhaihai"
-  } else if (grepl("Kanewai", file_list[i])) {
+  } else if (grepl("Kanewai", file_list[i], ignore.case = TRUE)) {
     data$site <- "Kanewai"
   }
-  
-  # Change columns containing "date" in their names to "date_time_hst"
-  date_columns <- grep("date", colnames(data), ignore.case = TRUE)
+
+  # Site-specific tag
+  # for (site_name in site_names) {
+  #   if (grepl(site_name, file_list[i], ignore.case = TRUE)) {
+  #     data$site_specific <- site_name
+  #     break
+  #   }
+  # }
+
+  # Standardize column names
+  date_columns <- grep("date", names(data), ignore.case = TRUE)
   if (length(date_columns) > 0) {
-    colnames(data)[date_columns] <- "date_time_hst"
-  }
-  
-  # Change columns containing "do_conc" in their names to "oxygen"
-  do_columns <- grep("p_h", colnames(data), ignore.case = TRUE)
-  if (length(do_columns) > 0) {
-    colnames(data)[do_columns] <- "pH"
+    names(data)[date_columns] <- "date_time_hst"
   }
 
- # Merge date and time columns into a single datetime column
-  if ("date_time_hst" %in% colnames(data) && "time" %in% colnames(data)) {
-    data <- data %>%
-      mutate(date_time_hst = as.POSIXct(paste(date_time_hst, time), format = "%d-%m-%y %H:%M:%S"))
+  pH_columns <- grep("p_h", names(data), ignore.case = TRUE)
+  if (length(pH_columns) > 0) {
+    names(data)[pH_columns] <- "pH"
   }
-  
-  # Set the class of "date_time_hst" column to POSIXct with the specified format
-   if ("date_time_hst" %in% colnames(data)) {
-    date_format <- c("%m/%d/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S %Z")
-    for (format in date_format) {
-      data$date_time_hst <- as.POSIXct(data$date_time_hst, format = format, tz = "UTC", tryFormats = c(format))
+
+  # ---- Robust datetime parse (AM/PM or 24h) ----
+  datetime_str <- NULL
+  if ("date_time_hst" %in% names(data) && "time" %in% names(data)) {
+    datetime_str <- paste(as.character(data$date_time_hst), as.character(data$time))
+  } else if ("date_time_hst" %in% names(data)) {
+    datetime_str <- as.character(data$date_time_hst)
+  }
+
+  if (!is.null(datetime_str)) {
+    tz_hst <- "Pacific/Honolulu"
+
+    am_pm_present <- any(grepl("\\b(AM|PM)\\b", datetime_str, ignore.case = TRUE), na.rm = TRUE)
+
+    orders_am_pm <- c("mdy HMS p","dmy HMS p","ymd HMS p","mdy HM p","dmy HM p","ymd HM p")
+    orders_24h   <- c("mdy HMS","dmy HMS","ymd HMS","mdy HM","dmy HM","ymd HM")
+    orders <- if (am_pm_present) orders_am_pm else orders_24h
+
+    dt <- parse_date_time(datetime_str, orders = orders, tz = tz_hst, quiet = TRUE)
+
+    if (sum(is.na(dt)) > 0.5 * length(dt)) {
+      backup_orders <- if (am_pm_present) orders_24h else orders_am_pm
+      dt2 <- parse_date_time(datetime_str, orders = backup_orders, tz = tz_hst, quiet = TRUE)
+      dt[is.na(dt)] <- dt2[is.na(dt)]
     }
+
+    # Ensure POSIXct and normalize display to 24-hour:
+    # 1) strftime to "%Y-%m-%d %H:%M:%S" (24h),
+    # 2) parse back to POSIXct so the column stays datetime (not character).
+    data$date_time_hst <- as.POSIXct(
+      strftime(dt, format = "%Y-%m-%d %H:%M:%S", tz = tz_hst),
+      tz = tz_hst
+    )
   }
-  
-  # Assign each dataframe to a variable based on file index
-    assign(tolower(paste0(gsub("\\..*", "", basename(file_list[i])))), data)
+
+  # Save out
+  assign(tolower(gsub("\\..*", "", basename(file_list[i]))), data, envir = .GlobalEnv)
 }
+
+
 ```
 
 #Trimming
@@ -129,40 +160,83 @@ data_ph_octnov2022_kalauhaihai_20839036 <-
 # Trimming
 data_ph_octnov2022_kalauhaihai_20839036 <- 
   data_ph_octnov2022_kalauhaihai_20839036 %>% 
-  filter(date_time_hst >= "2022-10-07 10:10:00" & date_time_hst <= "2022-11-09 9:30:00")
+  filter(date_time_hst >= ymd_hms("2022-10-07 10:10:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2022-11-09 09:30:00", tz = "Pacific/Honolulu"))
 
 data_ph_febapr2023_kalauhaihai_20839036 <-
   data_ph_febapr2023_kalauhaihai_20839036 %>% 
-  filter(date_time_hst >= "2023-02-16 9:52:00" & date_time_hst <= "2023-04-05 09:35:00")
+  filter(date_time_hst >= ymd_hms("2023-02-16 09:52:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2023-04-05 09:35:00", tz = "Pacific/Honolulu"))
 
 data_ph_febapr2023_kanewaispringrock_21433529 <-
   data_ph_febapr2023_kanewaispringrock_21433529 %>% 
-  filter(date_time_hst >= "2023-02-09 10:13:00" & date_time_hst <= "2023-04-05 10:15:00")
+  filter(date_time_hst >= ymd_hms("2023-02-09 10:13:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2023-04-05 10:15:00", tz = "Pacific/Honolulu"))
 
 data_ph_apr2022_kalauhaihai_20839036 <-
   data_ph_apr2022_kalauhaihai_20839036 %>% 
-  filter(date_time_hst >= "2022-04-09 15:10:00" & date_time_hst <= "2022-04-19 09:30:00")
+  filter(date_time_hst >= ymd_hms("2022-04-09 15:10:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2022-04-19 09:30:00", tz = "Pacific/Honolulu"))
 
 data_ph_julysept2023_kalauhaihai_21433529 <-
   data_ph_julysept2023_kalauhaihai_21433529 %>% 
-  filter(date_time_hst >= "2023-07-12 16:40:00" & date_time_hst <= "2023-09-17 13:25:00")
+  filter(date_time_hst >= ymd_hms("2023-07-12 16:40:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2023-09-17 13:25:00", tz = "Pacific/Honolulu"))
 
- data_ph_aprjune2024_kalauhaihaigarage_21952333 <-
-   data_ph_aprjune2024_kalauhaihaigarage_21952333 %>% 
-   filter(date_time_hst >= "2024-04-04 16:40:00" & date_time_hst <= "2024-06-12 13:25:00")
+data_ph_aprjune2024_kalauhaihaigarage_21952333 <-
+  data_ph_aprjune2024_kalauhaihaigarage_21952333 %>% 
+  filter(date_time_hst >= ymd_hms("2024-04-04 16:40:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-06-12 13:25:00", tz = "Pacific/Honolulu"))
 
-  data_ph_aprjune2024_kanewaispringrock_21433529 <-
-    data_ph_aprjune2024_kanewaispringrock_21433529 %>% 
-    filter(date_time_hst >= "2024-04-05 16:40:00" & date_time_hst <= "2024-06-12 13:25:00")
+data_ph_aprjune2024_kanewaispringrock_21433529 <-
+  data_ph_aprjune2024_kanewaispringrock_21433529 %>% 
+  filter(date_time_hst >= ymd_hms("2024-04-05 16:40:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-06-12 13:25:00", tz = "Pacific/Honolulu"))
 
 data_ph_febapr2024_kalauhaihaigarage_21873460 <-
-   data_ph_febapr2024_kalauhaihaigarage_21873460 %>% 
-   filter(date_time_hst >= "2024-02-02 16:40:00" & date_time_hst <= "2024-04-03 13:25:00")
+  data_ph_febapr2024_kalauhaihaigarage_21873460 %>% 
+  filter(date_time_hst >= ymd_hms("2024-02-02 16:40:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-04-03 13:25:00", tz = "Pacific/Honolulu"))
 
- data_ph_febapr2024_kanewaispringrock_20839036 <-
-   data_ph_febapr2024_kanewaispringrock_20839036 %>% 
-   filter(date_time_hst >= "2024-02-02 12:00:00" & date_time_hst <= "2024-04-03 13:25:00")
+data_ph_febapr2024_kanewaispringrock_20839036 <-
+  data_ph_febapr2024_kanewaispringrock_20839036 %>% 
+  filter(date_time_hst >= ymd_hms("2024-02-02 12:00:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-04-03 13:25:00", tz = "Pacific/Honolulu"))
 
+data_ph_junesept2024_kalauhaihaigarage_20839036 <-
+  data_ph_junesept2024_kalauhaihaigarage_20839036 %>% 
+  filter(date_time_hst >= ymd_hms("2024-06-13 13:13:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-09-20 15:45:00", tz = "Pacific/Honolulu"))
+
+data_ph_junesept2024_kanewaispringrock_21873460 <-
+  data_ph_junesept2024_kanewaispringrock_21873460 %>% 
+  filter(date_time_hst >= ymd_hms("2024-06-13 11:58:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-09-20 16:45:00", tz = "Pacific/Honolulu"))
+
+data_ph_septnov2024_kalauhaihaigarage_21433529 <-
+  data_ph_septnov2024_kalauhaihaigarage_21433529 %>% 
+  filter(date_time_hst >= ymd_hms("2024-09-20 16:00:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-11-22 14:50:00", tz = "Pacific/Honolulu"))
+
+data_ph_septnov2024_kanewaispringrock_21952333 <-
+  data_ph_septnov2024_kanewaispringrock_21952333 %>% 
+  filter(date_time_hst >= ymd_hms("2024-09-20 16:55:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2024-11-22 15:55:00", tz = "Pacific/Honolulu"))
+
+data_ph_novfeb2025_kalauhaihaigarage_20839036 <-
+  data_ph_novfeb2025_kalauhaihaigarage_20839036 %>% 
+  filter(date_time_hst >= ymd_hms("2024-11-22 15:15:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-02-06 09:20:00", tz = "Pacific/Honolulu"))
+
+data_ph_novfeb2025_kanewaispringrock_21873460 <-
+  data_ph_novfeb2025_kanewaispringrock_21873460 %>% 
+  filter(date_time_hst >= ymd_hms("2024-11-22 16:10:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-02-06 10:16:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_febapr2025_kalauhaihaigarage_21952333 <-
+  data_ph_temp_febapr2025_kalauhaihaigarage_21952333 %>% 
+  filter(date_time_hst >= ymd_hms("2025-02-06 09:35:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 09:44:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_febapr2025_kanewaispringrock_21433529 <-
+  data_ph_temp_febapr2025_kanewaispringrock_21433529 %>% 
+  filter(date_time_hst >= ymd_hms("2025-02-06 10:25:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 10:27:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_aprjuly2025_kalauhaihaigarage_21873460 <-
+  data_ph_temp_aprjuly2025_kalauhaihaigarage_21873460 %>% 
+  filter(date_time_hst >= ymd_hms("2025-04-29 09:51:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-07-31 09:40:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_aprjuly2025_kanewaispringrock_21433529 <-
+  data_ph_temp_aprjuly2025_kanewaispringrock_21433529 %>% 
+  filter(date_time_hst >= ymd_hms("2025-04-29 16:15:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-07-31 11:10:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_julyoct2025_kalauhaihaigarage_21952333 <-
+  data_ph_temp_julyoct2025_kalauhaihaigarage_21952333 %>% 
+  filter(date_time_hst >= ymd_hms("2025-07-31 10:20:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-10-10 09:25:00", tz = "Pacific/Honolulu"))
 ```
 
 #Join Data
@@ -176,7 +250,19 @@ pH_joined <- bind_rows(data_ph_julysept2023_kalauhaihai_21433529,
   data_ph_aprjune2024_kalauhaihaigarage_21952333,
   data_ph_aprjune2024_kanewaispringrock_21433529,
   data_ph_febapr2024_kalauhaihaigarage_21873460,
-  data_ph_febapr2024_kanewaispringrock_20839036) %>% 
+  data_ph_febapr2024_kanewaispringrock_20839036,
+  data_ph_junesept2024_kalauhaihaigarage_20839036,
+  data_ph_junesept2024_kanewaispringrock_21873460,
+  data_ph_septnov2024_kalauhaihaigarage_21433529,
+  data_ph_septnov2024_kanewaispringrock_21952333,
+  data_ph_novfeb2025_kalauhaihaigarage_20839036,
+  data_ph_novfeb2025_kanewaispringrock_21873460,
+  data_ph_temp_febapr2025_kalauhaihaigarage_21952333,
+  data_ph_temp_febapr2025_kanewaispringrock_21433529,
+  data_ph_temp_aprjuly2025_kalauhaihaigarage_21873460,
+  data_ph_temp_aprjuly2025_kanewaispringrock_21433529,
+  data_ph_temp_julyoct2025_kalauhaihaigarage_21952333
+  ) %>% 
   select(date_time_hst, pH, site)
 ```
 
