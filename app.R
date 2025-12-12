@@ -68,7 +68,7 @@ conn <- dbConnect(duckdb(), dbdir = here("fishpond.duckdb"), read_only = TRUE)
 onStop(\() dbDisconnect(conn))
 
 system_prompt_str <- paste0(
-  "You are an AI assistant analyzing fishpond sensor data stored in 'fishpond.duckdb'. ",
+  "You're an AI assistant analyzing fishpond sensor data stored in 'fishpond.duckdb'. ",
   "The 'sensor_data' table contains environmental measurements from two Hawaiian fishpond sites.\n\n",
   
   "**DATA STRUCTURE:**\n",

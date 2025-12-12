@@ -4,6 +4,7 @@ library(DBI)
 library(duckdb)
 
 # 1. Remove existing DuckDB file (if it exists)
+
 if (file.exists("fishpond.duckdb")) {
   file.remove("fishpond.duckdb")
 }
