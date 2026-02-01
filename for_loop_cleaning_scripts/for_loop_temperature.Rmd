@@ -378,8 +378,20 @@ data_temp_octnov2023_kanewaispringledge_21445019 <- data_temp_octnov2023_kanewai
   filter(date_time_hst >= ymd_hms("2023-10-05 10:12:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2023-11-02 10:22:00", tz = "Pacific/Honolulu"))
 
 
+data_temp_febapr2025_kanewaiauwaiunderfootbridge_20970093 <- data_temp_febapr2025_kanewaiauwaiunderfootbridge_20970093 %>% 
+  filter(date_time_hst >= ymd_hms("2025-02-06 10:30:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 10:35:00", tz = "Pacific/Honolulu"))
 
 
+data_temp_febapr2025_kanewaifishpondedgenorfolk_2097010 <- data_temp_febapr2025_kanewaifishpondedgenorfolk_20970107 %>% 
+  filter(date_time_hst >= ymd_hms("2025-02-06 10:44:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 10:43:00", tz = "Pacific/Honolulu"))
+
+
+data_temp_febapr2025_kanewairockstairsbywall_21445020 <- data_temp_febapr2025_kanewairockstairsbywall_21445020 %>% 
+  filter(date_time_hst >= ymd_hms("2025-02-06 10:26:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 10:32:00", tz = "Pacific/Honolulu"))
+
+
+data_temp_febapr2025_kanewaispringledgemaukaend_20970123 <- data_temp_febapr2025_kanewaispringledgemaukaend_20970123 %>% 
+  filter(date_time_hst >= ymd_hms("2025-02-06 10:38:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 10:46:00", tz = "Pacific/Honolulu"))
 ```
 
 #Join Data This last section joins the data. One again manual input is
@@ -451,7 +463,11 @@ data_temp_aprsept2024_kanewairockstairsbywall_20970123,
 data_temp_aprsept2024_kanewaispringledgemakaiend_20970093,
 data_temp_octnov2023_kanewaifishpondedgenorfolk_20970122,
 data_temp_octnov2023_kanewairockstairsbywall_20970092,
-data_temp_octnov2023_kanewaispringledge_21445019
+data_temp_octnov2023_kanewaispringledge_21445019,
+data_temp_febapr2025_kanewaifishpondedgenorfolk_20970107,
+data_temp_febapr2025_kanewaispringledgemaukaend_20970123,
+data_temp_febapr2025_kanewairockstairsbywall_21445020,
+data_temp_febapr2025_kanewaiauwaiunderfootbridge_20970093
 
 ) %>% 
   select(date_time_hst, temperature, site, site_specific)
