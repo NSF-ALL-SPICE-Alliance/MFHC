@@ -152,7 +152,7 @@ kalauhaihai_image_raster <- as.raster(kalauhaihai_image)
 
 # --- Sensor coordinates --------------------------------------------------------
 kanewai_sensors <- data.frame(
-  site_specific = c("Norfolk", "Auwai", "RockWall", "Springledge"),
+  site_specific = c("Norfolk", "Auwai", "Rock", "Springledge"),
   x = c(1, 8.5, 9, 6),
   y = c(7.5, 3.45, 2, 2.5),
   radius = 0.3
