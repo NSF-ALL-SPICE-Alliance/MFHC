@@ -392,6 +392,15 @@ data_temp_febapr2025_kanewairockstairsbywall_21445020 <- data_temp_febapr2025_ka
 
 data_temp_febapr2025_kanewaispringledgemaukaend_20970123 <- data_temp_febapr2025_kanewaispringledgemaukaend_20970123 %>% 
   filter(date_time_hst >= ymd_hms("2025-02-06 10:38:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 10:46:00", tz = "Pacific/Honolulu"))
+
+data_temp_apr2025jan2026_kanewairockstairsbywall_20970122 <- data_temp_apr2025jan2026_kanewairockstairsbywall_20970122 %>%
+  filter(date_time_hst >= ymd_hms("2025-04-03 10:34:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-02-05 10:46:00", tz = "Pacific/Honolulu"))
+
+data_temp_apr2025jan2026_kanewaifishpondedgenorfolk_21445021 <- data_temp_apr2025jan2026_kanewaifishpondedgenorfolk_21445021 %>%
+  filter(date_time_hst >= ymd_hms("2025-04-03 10:44:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-02-05 11:03:00", tz = "Pacific/Honolulu"))
+
+data_temp_apr2025jan2026_kanewaiauwaiunderfootbridge_20970102 <- data_temp_apr2025jan2026_kanewaiauwaiunderfootbridge_20970102 %>%
+  filter(date_time_hst >= ymd_hms("2025-04-03 10:36:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-02-05 10:52:00", tz = "Pacific/Honolulu"))
 ```
 
 #Join Data This last section joins the data. One again manual input is
@@ -467,7 +476,10 @@ data_temp_octnov2023_kanewaispringledge_21445019,
 data_temp_febapr2025_kanewaifishpondedgenorfolk_20970107,
 data_temp_febapr2025_kanewaispringledgemaukaend_20970123,
 data_temp_febapr2025_kanewairockstairsbywall_21445020,
-data_temp_febapr2025_kanewaiauwaiunderfootbridge_20970093
+data_temp_febapr2025_kanewaiauwaiunderfootbridge_20970093,
+data_temp_apr2025jan2026_kanewaiauwaiunderfootbridge_20970102,
+data_temp_apr2025jan2026_kanewairockstairsbywall_20970122,
+data_temp_apr2025jan2026_kanewaifishpondedgenorfolk_21445021
 
 ) %>% 
   select(date_time_hst, temperature, site, site_specific)

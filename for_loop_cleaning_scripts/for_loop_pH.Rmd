@@ -237,6 +237,14 @@ data_ph_temp_aprjuly2025_kanewaispringrock_21433529 <-
 data_ph_temp_julyoct2025_kalauhaihaigarage_21952333 <-
   data_ph_temp_julyoct2025_kalauhaihaigarage_21952333 %>% 
   filter(date_time_hst >= ymd_hms("2025-07-31 10:20:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-10-10 09:25:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_oct2025jan2026_kanewaispringrock_20839036 <-
+  data_ph_temp_oct2025jan2026_kanewaispringrock_20839036 %>% 
+  filter(date_time_hst >= ymd_hms("2025-10-28 18:19:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-01-22 10:31:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_oct2025jan2026_kalauhaihaigarage_21873460 <-
+  data_ph_temp_oct2025jan2026_kalauhaihaigarage_21873460 %>% 
+  filter(date_time_hst >= ymd_hms("2025-10-10 09:40:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-01-22 09:27:00", tz = "Pacific/Honolulu"))
 ```
 
 #Join Data
@@ -261,7 +269,10 @@ pH_joined <- bind_rows(data_ph_julysept2023_kalauhaihai_21433529,
   data_ph_temp_febapr2025_kanewaispringrock_21433529,
   data_ph_temp_aprjuly2025_kalauhaihaigarage_21873460,
   data_ph_temp_aprjuly2025_kanewaispringrock_21433529,
-  data_ph_temp_julyoct2025_kalauhaihaigarage_21952333
+  data_ph_temp_julyoct2025_kalauhaihaigarage_21952333,
+  data_ph_temp_oct2025jan2026_kanewaispringrock_20839036,
+  data_ph_temp_oct2025jan2026_kalauhaihaigarage_21873460
+  
   ) %>% 
   select(date_time_hst, pH, site)
 ```

@@ -218,7 +218,13 @@ data_oxygen_temp_augoct2025_kanewaispring_21446085 <-
   data_oxygen_temp_augoct2025_kanewaispring_21446085 %>%
   filter(date_time_hst >= ymd_hms("2025-08-06 11:30:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-10-04 14:20:00", tz = "Pacific/Honolulu"))
 
+data_oxygen_temp_oct2025jan2026_kalauhaihaigarage_21446085 <-
+  data_oxygen_temp_oct2025jan2026_kalauhaihaigarage_21446085 %>%
+  filter(date_time_hst >= ymd_hms("2025-10-28 16:55:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-01-22 09:27:00", tz = "Pacific/Honolulu"))
 
+data_oxygen_temp_oct2025jan2026_kanewaispringrock_21515403 <-
+  data_oxygen_temp_oct2025jan2026_kanewaispringrock_21515403 %>%
+  filter(date_time_hst >= ymd_hms("2025-10-28 18:19:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-01-22 10:31:00", tz = "Pacific/Honolulu"))
 ```
 
 
@@ -239,7 +245,9 @@ oxygen_joined <- bind_rows(data_oxygen_septjan2024_kanewai_21446085,
   data_oxygen_temp_marapr2025_kanewaispringrock_21515403,
   data_oxygen_temp_aprmay2025_kanewaispring_21515403,
   data_oxygen_temp_aprjuly2025_kalauhaihaigarage_21446085,
-  data_oxygen_temp_augoct2025_kanewaispring_21446085) %>% 
+  data_oxygen_temp_augoct2025_kanewaispring_21446085,
+  data_oxygen_temp_oct2025jan2026_kalauhaihaigarage_21446085,
+  data_oxygen_temp_oct2025jan2026_kanewaispringrock_21515403) %>% 
   select(date_time_hst, oxygen, site)
 
 
