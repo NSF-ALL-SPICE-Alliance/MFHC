@@ -1,43 +1,182 @@
+# ==============================================================================
+# Maunalua Fishpond Heritage Center dashboard: Kānewai & Kalauhaʻihaʻi
+# ==============================================================================
+# Files this app needs next to app.R:
+#   fishpond.duckdb               (table: sensor_data)
+#   DJI_0321.JPG, DJI_0353.JPG    (drone images)
+#   www/                          (logos and photos)
+# Secrets: OPENAI_API_KEY (set in .Renviron locally and in Connect Cloud).
+#
+# Time convention: date_time_hst holds Hawaii wall-clock time stored without a
+# time zone. Everything below treats it as a plain timestamp (R labels it UTC),
+# so the app behaves the same on a laptop in Hawaii and on a server in UTC.
+# ==============================================================================
+
 library(shiny)
+library(bslib)
 library(ggplot2)
-library(ggforce)
 library(dplyr)
-library(readr)
 library(here)
 library(magick)
-library(grid)
 library(plotly)
 library(shinyWidgets)
-library(shinycssloaders)  # Loading spinner package
+library(shinycssloaders)
 library(DBI)
 library(duckdb)
 library(ellmer)
 library(shinychat)
-library(promises)
 library(mapgl)
 library(later)
 
-openai_model <- "gpt-4o"
+# --- Settings -----------------------------------------------------------------
+openai_model   <- "gpt-4o"
+hourly_plots   <- TRUE   # TRUE: time-series charts use hourly means (fast).
+# FALSE: plot every 10-minute reading (slow).
+chat_max_rows  <- 200    # cap on rows sent back to the model per query
 
-# --- NEW: Plot help UI + styles ------------------------------------------------
-plotHelpUI <- function(id, title = "How to explore these charts") {
-  htmltools::tags$details(
+# --- Database -----------------------------------------------------------------
+conn <- dbConnect(duckdb(), dbdir = here("fishpond.duckdb"), read_only = TRUE)
+onStop(\() dbDisconnect(conn, shutdown = TRUE))
+
+date_range <- dbGetQuery(conn, "
+  SELECT CAST(MIN(date_time_hst) AS DATE) AS min_date,
+         CAST(MAX(date_time_hst) AS DATE) AS max_date
+  FROM sensor_data
+")
+
+# Time series for the line charts, loaded once at startup.
+time_expr <- if (hourly_plots) "date_trunc('hour', date_time_hst)" else "date_time_hst"
+series <- dbGetQuery(conn, sprintf("
+  SELECT site, site_specific, variable, %s AS ts, AVG(value) AS value
+  FROM sensor_data
+  GROUP BY ALL
+  ORDER BY 1, 2, 3, 4
+", time_expr)) |>
+  rename(date_time_hst = ts)
+
+# Temperature at every sensor of one site at one moment (for the pond map).
+snapshot <- function(site, ts_string) {
+  dbGetQuery(conn, "
+    SELECT site_specific, AVG(value) AS value
+    FROM sensor_data
+    WHERE site = ?
+      AND variable = 'temperature'
+      AND date_time_hst = CAST(? AS TIMESTAMP)
+    GROUP BY site_specific
+  ", params = list(site, ts_string))
+}
+
+# --- Site configuration -------------------------------------------------------
+# Everything that differs between the two sites lives here.
+sites <- list(
+  kanewai = list(
+    db_name      = "Kanewai",
+    label        = "Kānewai",
+    raster       = as.raster(image_read("DJI_0321.JPG")),
+    xmax         = 10,
+    ymax         = 10,
+    label_offset = 0.45,
+    map_height   = "600px",
+    sensors = data.frame(
+      site_specific = c("Norfolk", "Auwai", "Rock", "Springledge"),
+      x = c(1, 8.5, 9, 6),
+      y = c(7.5, 3.45, 2, 2.5)
+    ),
+    series_exclude = character(0),
+    colors = c(
+      Norfolk = "#1E3A8A", Shade = "#B91C1C", Auwai = "#065F46",
+      RockWall = "#6B21A8", Rock = "#EA580C", Springledge = "#7C2D12"
+    ),
+    temp_ylim_c = c(20, 32.5),
+    ph_ylim     = c(6.5, 11),
+    oxygen_ylim = c(0, 10)
+  ),
+  kalauhaihai = list(
+    db_name      = "Kalauhaihai",
+    label        = "Kalauhaʻihaʻi",
+    raster       = as.raster(image_read("DJI_0353.JPG")),
+    xmax         = 5472,
+    ymax         = 3648,
+    label_offset = 190,
+    map_height   = "700px",
+    sensors = data.frame(
+      site_specific = c("Garage", "Makaha"),
+      x = c(900, 2750),
+      y = c(600, 1900)
+    ),
+    series_exclude = c("Auwai", "Coconut"),
+    colors = c(Garage = "#1E3A8A", Makaha = "#B91C1C"),
+    temp_ylim_c = NULL,
+    ph_ylim     = NULL,
+    oxygen_ylim = NULL
+  )
+)
+
+# --- Helpers ------------------------------------------------------------------
+c_to_f <- function(x) x * 9 / 5 + 32
+
+time_choices <- sprintf("%02d:%02d", rep(0:23, each = 6), rep(seq(0, 50, 10), 24))
+
+finish_plotly <- function(p) {
+  p |>
+    plotly::layout(hovermode = "x unified") |>
+    plotly::config(
+      displaylogo = FALSE,
+      modeBarButtonsToAdd = c("hovercompare", "toggleSpikelines")
+    )
+}
+
+# Line chart with labelled horizontal reference lines (used for pH and oxygen).
+# `lines` is a list of list(y, label, colour, linetype).
+threshold_plot <- function(df, title, ylab, colour, ylim = NULL, lines = list()) {
+  p <- ggplot(df, aes(x = date_time_hst, y = value)) +
+    geom_line(linewidth = 0.4, colour = colour) +
+    labs(title = title, x = "Date and Time", y = ylab) +
+    theme_minimal()
+  
+  for (l in lines) {
+    p <- p + geom_hline(yintercept = l$y, linetype = l$linetype, colour = l$colour)
+  }
+  if (!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
+  
+  annotations <- lapply(lines, function(l) {
+    list(
+      x = 0.01, xref = "paper", xanchor = "left",
+      y = l$y, yref = "y", yanchor = "top",
+      text = l$label, showarrow = FALSE,
+      font = list(size = 12, color = "#333333")
+    )
+  })
+  
+  finish_plotly(ggplotly(p)) |> plotly::layout(annotations = annotations)
+}
+
+ph_lines <- list(
+  list(y = 7, label = "pH level of freshwater", colour = "blue", linetype = "dashed")
+)
+oxygen_lines <- list(
+  list(y = 5, label = "above 5 mg/L is generally considered healthy",
+       colour = "darkgreen", linetype = "dashed"),
+  list(y = 2, label = "below 2 mg/L is considered hypoxic (NOAA)",
+       colour = "darkred", linetype = "solid")
+)
+
+# --- Plot help panel ----------------------------------------------------------
+plotHelpUI <- function(title = "How to explore these charts") {
+  tags$details(
     class = "plot-help",
-    open = NA,  # set to NA for open-by-default. Remove to keep collapsed.
-    htmltools::tags$summary(htmltools::HTML(paste0("💡 ", title))),
-    htmltools::HTML('
+    open = NA,
+    tags$summary(HTML(paste0("💡 ", title))),
+    HTML('
       <ul class="plot-help-list">
         <li><strong>Hover</strong> to see exact values, time, and sensor/site.</li>
         <li><strong>Zoom</strong>: click-and-drag a box over dates to zoom in.
             <em>Double-click</em> anywhere to reset.</li>
-        <li><strong>Pan</strong>: after zooming, drag on the plot (or use the 🔎/🖐️ toolbar buttons).</li>
-        <li><strong>Legend</strong>: click a legend item to hide/show a series.
-            <em>Double-click</em> a legend item to isolate it; double-click again to restore all.</li>
-        <li><strong>Straight Lines</strong>: indicate time between data collection 📆.</li>
+        <li><strong>Pan</strong>: after zooming, drag on the plot (or use the toolbar buttons).</li>
+        <li><strong>Straight lines</strong> indicate time between data collection 📆.</li>
         <li><strong>Compare</strong>: turn on <em>Compare data on hover</em> in the toolbar to see all series at once.</li>
         <li><strong>Spike lines</strong>: toggle <em>Spikes</em> for vertical guide lines under the cursor.</li>
         <li><strong>Download</strong>: use the 📷 icon to save the figure as PNG.</li>
-        <li><strong>Select points</strong> (advanced): use <em>Box/Lasso Select</em>; clear with <em>Reset axes</em>.</li>
       </ul>
       <div class="plot-help-note">
         Tip: You can also drag along just the <em>x-axis</em> labels to zoom the time window precisely.
@@ -46,27 +185,164 @@ plotHelpUI <- function(id, title = "How to explore these charts") {
   )
 }
 
-plotHelpStyles <- htmltools::tags$style(htmltools::HTML("
-  .plot-help { 
-    background:#f6faf9; border:1px solid #d7ece7; border-radius:10px; 
-    padding:12px 16px; margin:10px 0 16px 0; 
+app_styles <- tags$style(HTML("
+  .plot-help {
+    background:#f6faf9; border:1px solid #d7ece7; border-radius:10px;
+    padding:12px 16px; margin:10px 0 16px 0;
   }
-  .plot-help > summary {
-    cursor: pointer; font-weight: 700; color:#0b5d73; margin-bottom:8px;
-  }
-  .plot-help-list { 
-    margin: 8px 0 0 0; padding-left: 18px; line-height: 1.4;
-  }
-  .plot-help-list li { margin: 6px 0; }
-  .plot-help-note {
-    margin-top:10px; font-size:0.92em; color:#356e7a;
-  }
+  .plot-help > summary { cursor:pointer; font-weight:700; color:#0b5d73; margin-bottom:8px; }
+  .plot-help-list { margin:8px 0 0 0; padding-left:18px; line-height:1.4; }
+  .plot-help-list li { margin:6px 0; }
+  .plot-help-note { margin-top:10px; font-size:0.92em; color:#356e7a; }
+  .map-hint { color:#356e7a; margin:6px 0 10px 0; }
 "))
 
-# --- DB + chatbot setup --------------------------------------------------------
-conn <- dbConnect(duckdb(), dbdir = here("fishpond.duckdb"), read_only = TRUE)
-onStop(\() dbDisconnect(conn))
+# --- Site module --------------------------------------------------------------
+siteUI <- function(id, cfg) {
+  ns <- NS(id)
+  nav_panel(
+    cfg$label,
+    layout_columns(
+      col_widths = c(4, 5, 3),
+      dateInput(
+        ns("date"), "Date",
+        value = as.Date("2022-07-10"),
+        min = date_range$min_date, max = date_range$max_date
+      ),
+      sliderTextInput(
+        ns("time"), "Time of day (HST)",
+        choices = time_choices, selected = "08:00", grid = FALSE,
+        width = "100%"
+      ),
+      input_switch(ns("fahrenheit"), "Show °F", value = FALSE)
+    ),
+    div(
+      class = "map-hint",
+      "👆 Click a sensor to see its temperature over time 📈.",
+      "⭐ indicates the pH and oxygen sensor."
+    ),
+    withSpinner(plotOutput(ns("map"), click = ns("click"), height = cfg$map_height)),
+    plotHelpUI(paste("Explore", cfg$label, "Temperature, pH, and Oxygen")),
+    uiOutput(ns("temp_ui")),
+    plotlyOutput(ns("ph")),
+    plotlyOutput(ns("oxygen"))
+  )
+}
 
+siteServer <- function(id, cfg) {
+  moduleServer(id, function(input, output, session) {
+    site_series <- series |> filter(site == cfg$db_name)
+    
+    temp_unit <- reactive(if (isTRUE(input$fahrenheit)) "°F" else "°C")
+    convert   <- function(x) if (isTRUE(input$fahrenheit)) c_to_f(x) else x
+    
+    # Selected moment as a plain "YYYY-MM-DD HH:MM:SS" string (HST wall clock)
+    selected_ts <- reactive({
+      req(input$date, input$time)
+      paste0(format(input$date, "%Y-%m-%d"), " ", input$time, ":00")
+    })
+    
+    # --- Pond map ---
+    map_data <- reactive({
+      snapshot(cfg$db_name, selected_ts()) |>
+        right_join(cfg$sensors, by = "site_specific") |>
+        mutate(value = convert(value))
+    })
+    
+    output$map <- renderPlot({
+      d <- map_data()
+      subtitle <- if (all(is.na(d$value))) {
+        paste("No temperature readings at", selected_ts(), "(try another date or time)")
+      } else {
+        paste("Water temperature at", selected_ts(), "HST")
+      }
+      
+      ggplot(d, aes(x = x, y = y)) +
+        annotation_raster(cfg$raster, xmin = 0, xmax = cfg$xmax, ymin = 0, ymax = cfg$ymax) +
+        geom_point(
+          aes(fill = value),
+          shape = 21, size = 12, colour = "black", alpha = 0.8
+        ) +
+        geom_text(
+          aes(y = y + cfg$label_offset, label = site_specific),
+          colour = "white", size = 4.5, fontface = "bold"
+        ) +
+        scale_fill_viridis_c(
+          name = paste0("Temperature (", temp_unit(), ")"),
+          option = "C", na.value = "grey70"
+        ) +
+        coord_fixed(xlim = c(0, cfg$xmax), ylim = c(0, cfg$ymax), expand = FALSE) +
+        labs(subtitle = subtitle) +
+        theme_void() +
+        theme(legend.position = "right", plot.subtitle = element_text(size = 13))
+    }, res = 96)
+    
+    # --- Clicked sensor -> temperature time series ---
+    clicked <- reactiveVal(NULL)
+    observeEvent(input$click, {
+      hit <- nearPoints(cfg$sensors, input$click, xvar = "x", yvar = "y",
+                        threshold = 25, maxpoints = 1)
+      if (nrow(hit) > 0) clicked(hit$site_specific)
+    })
+    
+    output$temp_ui <- renderUI({
+      if (is.null(clicked())) return(NULL)
+      withSpinner(plotlyOutput(session$ns("temp_plot")))
+    })
+    
+    output$temp_plot <- renderPlotly({
+      sensor <- req(clicked())
+      df <- site_series |>
+        filter(variable == "temperature",
+               site_specific != "General",
+               !site_specific %in% cfg$series_exclude) |>
+        mutate(value = convert(value))
+      
+      line_colour <- if (sensor %in% names(cfg$colors)) cfg$colors[[sensor]] else "#0B5D73"
+      
+      p <- ggplot(mapping = aes(x = date_time_hst, y = value)) +
+        geom_line(
+          data = df |> filter(site_specific != sensor),
+          aes(group = site_specific),
+          colour = "grey60", linewidth = 0.3, alpha = 0.4
+        ) +
+        geom_line(
+          data = df |> filter(site_specific == sensor),
+          colour = line_colour, linewidth = 0.6, alpha = 0.8
+        ) +
+        labs(
+          title = paste(cfg$label, "Temperature:", sensor),
+          x = "Date and Time",
+          y = paste0("Temperature (", temp_unit(), ")")
+        ) +
+        theme_minimal()
+      
+      if (!is.null(cfg$temp_ylim_c)) {
+        p <- p + coord_cartesian(ylim = convert(cfg$temp_ylim_c))
+      }
+      finish_plotly(ggplotly(p))
+    })
+    
+    # --- pH and oxygen ---
+    output$ph <- renderPlotly({
+      threshold_plot(
+        site_series |> filter(variable == "pH"),
+        title = paste(cfg$label, "pH"), ylab = "pH Level",
+        colour = "tomato4", ylim = cfg$ph_ylim, lines = ph_lines
+      )
+    })
+    
+    output$oxygen <- renderPlotly({
+      threshold_plot(
+        site_series |> filter(variable == "oxygen"),
+        title = paste(cfg$label, "Oxygen"), ylab = "Oxygen (mg/L)",
+        colour = "#0B5D73", ylim = cfg$oxygen_ylim, lines = oxygen_lines
+      )
+    })
+  })
+}
+
+# --- Chatbot text -------------------------------------------------------------
 system_prompt_str <- paste0(
   "You're an AI assistant analyzing fishpond sensor data stored in 'fishpond.duckdb'. ",
   "The 'sensor_data' table contains environmental measurements from two Hawaiian fishpond sites.\n\n",
@@ -95,26 +371,29 @@ system_prompt_str <- paste0(
   "   - Ignore capitalization: 'norfolk', 'Norfolk', 'NORFOLK' → 'Norfolk'\n\n",
   
   "4. **SQL Guidelines**:\n",
-  "   - Use DuckDB-compatible SQL only\n",
-  "   - Filter site using: WHERE site = 'Kanewai' (not LIKE, exact match after normalization)\n",
-  "   - For date ranges, use: WHERE date_time_hst BETWEEN '2023-01-01' AND '2023-12-31'\n",
-  "   - Always format dates as 'YYYY-MM-DD HH:MM:SS'\n",
-  "   - Use aggregate functions: AVG(), MIN(), MAX(), COUNT()\n\n",
+  "   - Use DuckDB-compatible SQL only; SELECT statements only\n",
+  "   - Filter site using: WHERE site = 'Kanewai' (exact match after normalization)\n",
+  "   - For date ranges use a half-open interval so the last day is included: ",
+  "date_time_hst >= '2023-08-01' AND date_time_hst < '2023-09-01'\n",
+  "   - Readings are every 10 minutes, so raw results are huge. The query tool returns at most ",
+  chat_max_rows, " rows. Always aggregate (AVG, MIN, MAX, COUNT, date_trunc by day/month) ",
+  "rather than selecting raw rows.\n\n",
   
   "5. **Response format**:\n",
   "   - Provide clear, concise answers with units (°C for temp, mg/L for oxygen)\n",
-  "   - Show SQL query used in a code block\n",
-  "   - If query returns no data, explain why (wrong site_specific for variable, date out of range, etc.)\n",
+  "   - Show the SQL query used in a code block\n",
+  "   - If a query returns no data, explain why (wrong site_specific for variable, date out of range, etc.)\n",
   "   - For ambiguous questions, ask for clarification\n\n",
   
   "**EXAMPLE QUERIES:**\n",
   "User: 'What was the average temp at kanewai norfolk in August 2023?'\n",
   "→ SELECT AVG(value) FROM sensor_data WHERE site = 'Kanewai' AND site_specific = 'Norfolk' ",
-  "AND variable = 'temperature' AND date_time_hst BETWEEN '2023-08-01' AND '2023-08-31'\n\n",
+  "AND variable = 'temperature' AND date_time_hst >= '2023-08-01' AND date_time_hst < '2023-09-01'\n\n",
   
   "User: 'Show me oxygen levels at Kalauhaihai'\n",
-  "→ SELECT date_time_hst, value FROM sensor_data WHERE site = 'Kalauhaihai' AND site_specific = 'General' ",
-  "AND variable = 'oxygen' ORDER BY date_time_hst\n\n",
+  "→ SELECT date_trunc('month', date_time_hst) AS month, AVG(value) AS avg_oxygen, MIN(value) AS min_oxygen, ",
+  "MAX(value) AS max_oxygen FROM sensor_data WHERE site = 'Kalauhaihai' AND site_specific = 'General' ",
+  "AND variable = 'oxygen' GROUP BY 1 ORDER BY 1\n\n",
   
   "User: 'Were there hypoxic conditions at kanewai?'\n",
   "→ SELECT COUNT(*) FROM sensor_data WHERE site = 'Kanewai' AND site_specific = 'General' ",
@@ -125,144 +404,90 @@ system_prompt_str <- paste0(
 
 greeting <- paste0(
   "⚡ **AI Data Assistant** 🌐\n\n",
-  "I'm your intelligent interface for exploring sensor data from **Kanewai Spring** and **Kalauhaihai Fishpond**. Ask me anything and I will translate your question into code to generate the best answer possible.\n\n",
-  "**Example Capabilities:**\n\n",
-  "📊 **Query sensor readings**\n",
-  "   *\"What was the average water temperature at kanewai norfolk in August 2023?\"*\n\n",
-  "📉 **Analyze temporal patterns**\n",
-  "   *\"When did Kanewai Norfolk record its highest temperature?\"*\n\n",
-  "🔄 **Compare conditions**\n",
-  "   *\"What percentage of time were the conditions at the kalauhaihai site hypoxic?\"*\n\n",
-  "💡 **Generate insights**\n",
-  "   *\"What's the average temperature across all kanewai sites?\"*\n\n",
-  "🧬 **Processing your questions with AI** — just type naturally below. 🚀"
+  "I'm your intelligent interface for exploring sensor data from **Kānewai Spring** and ",
+  "**Kalauhaʻihaʻi Fishpond**. Ask me anything and I will translate your question into code ",
+  "to generate the best answer possible.\n\n",
+  "**Example questions:**\n\n",
+  "📊 *\"What was the average water temperature at kanewai norfolk in August 2023?\"*\n\n",
+  "📉 *\"When did Kanewai Norfolk record its highest temperature?\"*\n\n",
+  "🔄 *\"What percentage of time were the conditions at the kalauhaihai site hypoxic?\"*\n\n",
+  "💡 *\"What's the average temperature across all kanewai sites?\"*\n\n",
+  "Just type naturally below. 🚀"
 )
 
-dbListTables(conn)
-
-# --- Images -------------------------------------------------------------------
-kanewai_image <- image_read("DJI_0321.JPG")
-kanewai_image_raster <- as.raster(kanewai_image)
-
-kalauhaihai_image <- image_read("DJI_0353.JPG")
-kalauhaihai_info <- image_info(kalauhaihai_image)
-img_width <- kalauhaihai_info$width
-img_height <- kalauhaihai_info$height
-kalauhaihai_image_raster <- as.raster(kalauhaihai_image)
-
-# --- Sensor coordinates --------------------------------------------------------
-kanewai_sensors <- data.frame(
-  site_specific = c("Norfolk", "Auwai", "Rock", "Springledge"),
-  x = c(1, 8.5, 9, 6),
-  y = c(7.5, 3.45, 2, 2.5),
-  radius = 0.3
-)
-
-kalauhaihai_sensors <- data.frame(
-  site_specific = c("Garage", "Makaha"),
-  x = c(900, 2750),
-  y = c(600, 1900),
-  radius = 120 
-)
-
-# --- Data ---------------------------------------------------------------------
-data <- read_csv(here("cleaned_data/master_data_pivot.csv"))
-
-# --- UI -----------------------------------------------------------------------
-ui <- fluidPage(
-  tags$head(plotHelpStyles),  # <--- NEW styles
-  tags$div(
-    style = "padding: 10px 0;",
-    tags$img(src = "app_logo_updated.png", height = "160px")
-  ),
-  sidebarLayout(
-    sidebarPanel(
-      div(
-        style = "background-color: white; padding: 10px; border-radius: 8px;",
-        chat_ui("chat", height = "600px", fill = TRUE)
-      )
+# Tool the model calls to read the database.
+run_query <- function(query) {
+  if (!grepl("^\\s*(select|with)\\b", query, ignore.case = TRUE, perl = TRUE)) {
+    stop("Only SELECT statements are allowed.")
+  }
+  df <- dbGetQuery(conn, query)
+  jsonlite::toJSON(
+    list(
+      total_rows = nrow(df),
+      truncated  = nrow(df) > chat_max_rows,
+      data       = head(df, chat_max_rows)
     ),
-    mainPanel(
-      tabsetPanel(
-        tabPanel(
-          "Overview",
-          h4("🌏 Kalauhaʻihaʻi & Kānewai from Above"),
-          maplibreOutput("hawaii_map", height = "600px"),
-          HTML('
-  <div style="padding-top: 30px; font-family: sans-serif; color: #333;">
+    auto_unbox = TRUE, dataframe = "rows"
+  )
+}
+
+# --- Overview text ------------------------------------------------------------
+overview_html <- HTML('
+  <div style="padding-top: 30px; color: #333;">
     <h3><strong>🌺 Project Overview</strong></h3>
-   <p>
-  Aloha, Welcome to our pilot data dashboard!<br><br>
-  This project is a collaboration with 
-  <a href="https://maunaluafishpond.org/" target="_blank">Maunalua Fishpond Heritage Center</a>. 
-  Since 2021, Chaminade students in Professor 
-  <a href="https://chaminade.edu/nsm/nsm-faculty/lupita-ruiz-jones//" target="_blank">Lupita Ruiz-Jones</a>’s environmental science classes have explored Kalauha’iha’i and Kānewai to study the impact of the vital flow of water mauka to makai. 
-  This research focuses on tracking water temperature, oxygen levels, salinity, pH, and water level changes.
-</p>
+    <p>
+      Aloha, Welcome to our pilot data dashboard!<br><br>
+      This project is a collaboration with
+      <a href="https://maunaluafishpond.org/" target="_blank">Maunalua Fishpond Heritage Center</a>.
+      Since 2021, Chaminade students in Professor
+      <a href="https://chaminade.edu/nsm/nsm-faculty/lupita-ruiz-jones/" target="_blank">Lupita Ruiz-Jones</a>’s
+      environmental science classes have explored Kalauhaʻihaʻi and Kānewai to study the impact of the vital flow of water mauka to makai.
+      This research focuses on tracking water temperature, oxygen levels, salinity, pH, and water level changes.
+    </p>
+    <p>
+      At Kalauhaʻihaʻi, data collected before and after lava tube restoration helps assess the impact of increased freshwater input and connectivity to the ocean.
+      Comparing this with Kānewai offers insights into how continuous freshwater flow shapes these ecosystems.
+    </p>
+    <p>
+      This pilot dashboard features graphs of temperature, pH, and dissolved oxygen for both sites.
+      We’ll keep updating it with data from 2021 to the present, adding the other variables we have been measuring—and we welcome your feedback to help us improve!
+    </p>
 
-<p>
-  At Kalauha’iha’i, data collected before and after lava tube restoration helps assess the impact of increased freshwater input and connectivity to the ocean. 
-  Comparing this with Kānewai offers insights into how continuous freshwater flow shapes these ecosystems.
-</p>
+    <h4><strong>Participants</strong></h4>
+    <ul>
+      <li><a href="https://lupita-ruiz-jones.squarespace.com/" target="_blank">Lupita Ruiz-Jones PhD</a>, Associate Professor of Environmental Science at Chaminade University</li>
+      <li><a href="https://connorflynn.github.io/" target="_blank">Connor Flynn MS</a>, Data Scientist</li>
+      <li>Hina Ioane, Environmental Science recent graduate</li>
+      <li>Kate Dugger, Environmental Studies recent graduate</li>
+      <li>Samantha Gibson, Environmental Studies recent graduate</li>
+      <li>Anson Ekau, Data Science recent graduate</li>
+      <li>Brandon Koskie, Data Science student</li>
+      <li>Students in multiple courses taught by Professor Ruiz-Jones since 2021</li>
+    </ul>
 
-<p>
-  This pilot dashboard features graphs of temperature, pH, and dissolved oxygen for both sites. 
-  We’ll keep updating it with data from 2021 to the present, adding the other variables we have been measuring—and we welcome your feedback to help us improve!
-</p>
+    <h4><strong>A few notes about the data</strong></h4>
+    <ul>
+      <li>Onset sensors and data loggers record every 10 min continuously when deployed.</li>
+      <li>Sensors are calibrated following the manufacturer’s guidelines.</li>
+      <li>We continue to collect data and will continue to add it to the dashboard.</li>
+      <li>Student research interns have presented results from this project at the Hawaiʻi Conservation Conference 2023, 2024, and 2025.</li>
+    </ul>
 
-<h4><strong>Participants</strong></h4>
-<ul>
-  <li><a href="https://lupita-ruiz-jones.squarespace.com/" target="_blank">Lupita Ruiz-Jones PhD</a>, Associate Professor of Environmental Science at Chaminade University</li>
-  <li><a href="https://connorflynn.github.io/" target="_blank">Connor Flynn MS</a>, Data Scientist</li>
-  <li>Hina Ioane, Environmental Science recent graduate</li>
-  <li>Kate Dugger, Environmental Studies recent graduate</li>
-  <li>Samantha Gibson, Environmental Studies recent graduate</li>
-  <li>Anson Ekau, Data Science recent graduate</li>
-  <li>Brandon Koskie, Data Science student</li>
-  <li>Students in multiple courses taught by Professor Ruiz-Jones since 2021</li>
-</ul>
+    <table class="table table-bordered" style="max-width: 480px;">
+      <tr><th>Variable</th><th>Date we started to collect data</th></tr>
+      <tr><td>Temperature</td><td>2021</td></tr>
+      <tr><td>pH</td><td>2022</td></tr>
+      <tr><td>Dissolved Oxygen</td><td>2022</td></tr>
+      <tr><td>Conductivity (Salinity)</td><td>2022</td></tr>
+      <tr><td>Water Level Change</td><td>2023</td></tr>
+    </table>
 
-<h4><strong>A few notes about the data</strong></h4>
-<ul>
-  <li>Onset sensors and data loggers record every 10 min continuously when deployed.</li>
-  <li>Sensors are calibrated following the manufacturer’s guidelines.</li>
-  <li>We continue to collect data and will continue to add it to the dashboard.</li>
-  <li>Student research interns have presented results from this project at the Hawai’i Conservation Conference 2023, 2024, and 2025.</li>
-</ul>
-
-<table border="1" cellpadding="5">
-  <tr>
-    <th>Variable</th>
-    <th>Date we started to collect data</th>
-  </tr>
-  <tr>
-    <td>Temperature</td>
-    <td>2021</td>
-  </tr>
-  <tr>
-    <td>pH</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>Dissolved Oxygen</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>Conductivity (Salinity)</td>
-    <td>2022</td>
-  </tr>
-  <tr>
-    <td>Water Level Change</td>
-    <td>2023</td>
-  </tr>
-</table>
-
-<h4><strong>Funding</strong></h4>
-<p>
-  Student research interns have been supported through the following funding sources: 
-  NSF Alliance Supporting Pacific through Computation Excellence (All-SPICE) and 
-  NSF Louis Stokes Alliances for Minority Participation (LSAMP).
-</p>
+    <h4><strong>Funding</strong></h4>
+    <p>
+      Student research interns have been supported through the following funding sources:
+      NSF Alliance Supporting Pacific through Computation Excellence (All-SPICE) and
+      NSF Louis Stokes Alliances for Minority Participation (LSAMP).
+    </p>
 
     <div style="display: flex; gap: 20px; margin-top: 30px; flex-wrap: wrap;">
       <img src="mast_chris_instruction.png" height="150px" style="border-radius: 10px;">
@@ -271,395 +496,46 @@ ui <- fluidPage(
       <img src="mast_brandon.png" height="150px" style="border-radius: 10px;">
     </div>
 
-    <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 40px;">
+    <div style="display: flex; justify-content: space-around; align-items: center; margin: 40px 0; flex-wrap: wrap; gap: 20px;">
       <img src="MFHClogo.png" height="60px">
       <img src="SPICELogo1.png" height="60px">
       <img src="cuh_logo.png" height="60px">
     </div>
   </div>
 ')
-        ),
-        tabPanel(
-          "Kānewai",
-          fluidRow(
-            column(
-              12,
-              switchInput("temp_unit_kanewai", value = FALSE, onLabel = "°F", offLabel = "°C"),
-              airDatepickerInput(
-                "date_time_hst_kanewai", "Select Date and Time:",
-                minDate = min(data$date_time_hst),
-                maxDate = max(data$date_time_hst),
-                value = as.POSIXct("2022-07-10 08:00 am"),
-                timepicker = TRUE
-              ),
-              withSpinner(plotOutput("kanewai_map", click = "kanewai_click", height = "600px")),
-              
-              # --- NEW help panel above the plots
-              plotHelpUI("kanewai_help", "Explore Kānewai Temperature, pH, and Oxygen"),
-              
-              uiOutput("kanewai_sensor_plots"),
-              plotlyOutput("kanewai_pH"),
-              plotlyOutput("kanewai_oxygen")
-            )
-          )
-        ),
-        tabPanel(
-          "Kalauhaʻihaʻi",
-          fluidRow(
-            column(
-              12,
-              switchInput("temp_unit_kalauhaihai", value = FALSE, onLabel = "°F", offLabel = "°C"),
-              airDatepickerInput(
-                "date_time_hst_kalauhaihai", "Select Date and Time:",
-                minDate = min(data$date_time_hst),
-                maxDate = max(data$date_time_hst),
-                value = as.POSIXct("2022-07-10 08:00 am"),
-                timepicker = TRUE
-              ),
-              withSpinner(plotOutput("kalauhaihai_map", click = "kalauhaihai_click", height = "800px", width = "100%")),
-              
-              # --- NEW help panel above the plots
-              plotHelpUI("kalauhaihai_help", "Explore Kalauhaʻihaʻi Temperature, pH, and Oxygen"),
-              
-              uiOutput("kalauhaihai_sensor_plots"),
-              plotlyOutput("kalauhaihai_pH"),
-              plotlyOutput("kalauhaihai_oxygen")
-            )
-          )
-        )
-      )
-    )
+
+# --- UI -----------------------------------------------------------------------
+ui <- page_sidebar(
+  title = tags$img(src = "app_logo_updated.png", height = "110px", alt = "Fishpond dashboard"),
+  window_title = "Maunalua Fishpond Dashboard",
+  theme = bs_theme(version = 5, primary = "#0B5D73"),
+  fillable = FALSE,
+  sidebar = sidebar(
+    width = 420,
+    open = "desktop",
+    chat_ui("chat", height = "75vh", fill = TRUE, messages = list(greeting))
+  ),
+  tags$head(app_styles),
+  navset_tab(
+    nav_panel(
+      "Overview",
+      h4("🌏 Kalauhaʻihaʻi & Kānewai from Above", class = "mt-3"),
+      maplibreOutput("hawaii_map", height = "600px"),
+      tags$small(class = "text-muted", "Imagery © Esri and its data providers"),
+      overview_html
+    ),
+    siteUI("kanewai", sites$kanewai),
+    siteUI("kalauhaihai", sites$kalauhaihai)
   )
 )
 
 # --- Server -------------------------------------------------------------------
 server <- function(input, output, session) {
   
-  ### Kanewai Logic ###
-  kanewai_data <- reactive({
-    data %>%
-      filter(site == "Kanewai", date_time_hst == input$date_time_hst_kanewai) %>%
-      right_join(kanewai_sensors, by = "site_specific")
-  })
+  siteServer("kanewai", sites$kanewai)
+  siteServer("kalauhaihai", sites$kalauhaihai)
   
-  kanewai_temp_data <- reactive({
-    df <- kanewai_data()
-    if (input$temp_unit_kanewai) {
-      df <- df %>% mutate(value = value * 9/5 + 32)
-    }
-    df
-  })
-  
-  kanewai_clicked_sensor <- reactiveVal(NULL)
-  observeEvent(input$kanewai_click, {
-    clicked <- nearPoints(kanewai_sensors, input$kanewai_click, xvar = "x", yvar = "y", maxpoints = 1)
-    if (nrow(clicked) > 0) kanewai_clicked_sensor(clicked$site_specific)
-  })
-  
-  output$kanewai_map <- renderPlot({
-    pond_data <- kanewai_temp_data()
-    
-    ggplot() +
-      annotation_raster(kanewai_image_raster, xmin = 0, xmax = 10, ymin = 0, ymax = 10) +
-      geom_circle(
-        data = pond_data, aes(x0 = x, y0 = y, r = radius, fill = value),
-        color = "black", alpha = 0.7
-      ) +
-      geom_text(
-        data = pond_data, aes(x = x, y = y + 0.4, label = site_specific),
-        color = "white", size = 4, fontface = "bold"
-      ) +
-      scale_fill_viridis_c(
-        name = if (input$temp_unit_kanewai) "Temperature (°F)" else "Temperature (°C)",
-        option = "C"
-      ) +
-      # 🔑 Lock the plot limits to the image extents and remove padding
-      coord_fixed(xlim = c(0, 10), ylim = c(0, 10), expand = FALSE) +
-      theme_minimal() + theme(legend.position = "right") +
-      labs(title = "Temperature Map (+ Click a sensor to see temperature over time 📈, ⭐ indicates pH and oxygen sensor)", x = "", y = "")
-  })
-  
-  
-  output$kanewai_sensor_plots <- renderUI({
-    if (is.null(kanewai_clicked_sensor())) return(NULL)
-    withSpinner(plotlyOutput("kanewai_temperature_plot"))
-  })
-  
-  observe({
-    sensor_name <- kanewai_clicked_sensor()
-    if (!is.null(sensor_name)) {
-      output$kanewai_temperature_plot <- renderPlotly({
-        sensor_data_combined <- data %>%
-          filter(site == "Kanewai", variable == "temperature", site_specific != "general") %>%
-          mutate(value = if (input$temp_unit_kanewai) value * 9/5 + 32 else value) %>%
-          mutate(order = ifelse(site_specific == sensor_name, 2, 1)) %>%
-          arrange(order, date_time_hst)
-        
-        line_plot <- ggplot(sensor_data_combined) +
-          geom_line(
-            data = sensor_data_combined %>% filter(site_specific != sensor_name),
-            aes(x = date_time_hst, y = value, group = site_specific),
-            color = "grey", size = 0.4, alpha = 0.3
-          ) +
-          geom_line(
-            data = sensor_data_combined %>% filter(site_specific == sensor_name),
-            aes(x = date_time_hst, y = value, color = site_specific),
-            size = 0.8, alpha = 0.5
-          ) +
-          scale_color_manual(values = c(
-            "Norfolk" = "#1E3A8A",
-            "Shade" = "#B91C1C",
-            "Auwai" = "#065F46",
-            "RockWall" = "#6B21A8",
-            "Rock" = "#EA580C",
-            "Springledge" = "#7C2D12"
-          )) +
-          ylim(20, 32.5) +
-          labs(
-            title = paste("Kānewai Temperature:", sensor_name),
-            x = "Date and Time",
-            y = if (input$temp_unit_kanewai) "Temperature (°F)" else "Temperature (°C)"
-          ) +
-          theme_minimal()
-        
-        ggplotly(line_plot) %>%
-          layout(hovermode = "x unified") %>%
-          config(displaylogo = FALSE, modeBarButtonsToAdd = c("hovercompare","toggleSpikelines","toImage"))
-      })
-    }
-  })
-  
-  output$kanewai_pH <- renderPlotly({
-    df <- data %>%
-      filter(variable == "pH", site == "Kanewai")
-    
-    x_max <- min(df$date_time_hst, na.rm = TRUE)
-    x_range <- diff(range(df$date_time_hst, na.rm = TRUE))
-    
-    x_ann <- x_max + (0.1 * x_range)  
-    
-    p2 <- ggplot(
-      df,
-      aes(x = date_time_hst, y = value)
-    ) +
-      geom_line(size = 0.5, color = "tomato4") +
-      labs(title = "Kānewai pH", x = "Date and Time", y = "pH Level") +
-      ylim(6.5, 11) +
-      geom_hline(yintercept = 7, linetype = "dashed", color = "blue") +
-      annotate(
-        "text",
-        x = x_ann,
-        y = 7 - 0.2,            # nudged above the line
-        label = "pH level of freshwater",
-        hjust = 1,
-        color = "gray20"
-      ) +
-      theme_minimal() +
-      theme(
-        plot.margin = margin(5.5, 30, 5.5, 5.5),  # more space on right
-        plot.clip = "off"
-      )
-    
-    ggplotly(p2)
-  })
-  
-  
-  output$kanewai_oxygen <- renderPlotly({
-    df <- data %>%
-      filter(variable == "oxygen", site == "Kanewai")
-    
-    x_max <- min(df$date_time_hst, na.rm = TRUE)
-    x_range <- diff(range(df$date_time_hst, na.rm = TRUE))
-    
-    x_ann <- x_max + (0.25 * x_range)  
-    
-    p3 <- ggplot(
-      data %>% filter(variable == "oxygen", site == "Kanewai"),
-      aes(x = date_time_hst, y = value)
-    ) +
-      geom_line(size = 0.5, color = "#0B5D73") +
-      ylim(0, 10) +
-      geom_hline(yintercept = 5, linetype = "dashed", color = "darkgreen") +
-      annotate(
-        "text",
-        x = x_ann,
-        y = 4 + 0.1,            # nudged above the line
-        label = "above 5 mg/L is generally conisdered healthy",
-        hjust = 1,
-        color = "gray20"
-      ) +
-      geom_hline(yintercept = 2, color = "darkred") +
-      annotate(
-        "text",
-        x = x_ann,
-        y = 1.5 + 0.1,            # nudged above the line
-        label = "below 2 mg/L is considered hypoxic (NOAA)",
-        hjust = 1,
-        color = "gray20"
-      ) +
-      labs(title = "Kānewai Oxygen", x = "Date and Time", y = "Oxygen (mg/L)") +
-      theme_minimal()
-    
-    ggplotly(p3) %>%
-      layout(hovermode = "x unified") %>%
-      config(displaylogo = FALSE, modeBarButtonsToAdd = c("hovercompare","toggleSpikelines","toImage"))
-  })
-  
-  ### Kalauhaihai Logic ###
-  kalauhaihai_data <- reactive({
-    data %>%
-      filter(site == "Kalauhaihai", date_time_hst == input$date_time_hst_kalauhaihai) %>%
-      right_join(kalauhaihai_sensors, by = "site_specific")
-  })
-  
-  kalauhaihai_temp_data <- reactive({
-    df <- kalauhaihai_data()
-    if (input$temp_unit_kalauhaihai) {
-      df <- df %>% mutate(value = value * 9/5 + 32)
-    }
-    df
-  })
-  
-  kalauhaihai_clicked_sensor <- reactiveVal(NULL)
-  observeEvent(input$kalauhaihai_click, {
-    clicked <- nearPoints(kalauhaihai_sensors, input$kalauhaihai_click, xvar = "x", yvar = "y", maxpoints = 1)
-    if (nrow(clicked) > 0) kalauhaihai_clicked_sensor(clicked$site_specific)
-  })
-  
-  output$kalauhaihai_map <- renderPlot({
-    pond_data <- kalauhaihai_temp_data()
-    
-    ggplot() +
-      annotation_raster(kalauhaihai_image_raster, xmin = 0, xmax = 5472, ymin = 0, ymax = 3648) +
-      geom_circle(
-        data = pond_data, aes(x0 = x, y0 = y, r = radius, fill = value),
-        color = "black", alpha = 0.7
-      ) +
-      geom_text(
-        data = pond_data, aes(x = x, y = y + 100, label = site_specific),
-        color = "white", size = 4, fontface = "bold"
-      ) +
-      scale_fill_viridis_c(
-        name = if (input$temp_unit_kalauhaihai) "Temperature (°F)" else "Temperature (°C)",
-        option = "C"
-      ) +
-      xlim(0, 5472) + ylim(0, 3648) +
-      coord_fixed(ratio = 1, expand = FALSE) +
-      theme_minimal() + theme(legend.position = "right") +
-      labs(title = "Temperature Map (👆 Click a sensor to see temperature over time 📈, ⭐ indicates pH and oxygen sensor))", x = "", y = "")
-  })
-  
-  output$kalauhaihai_sensor_plots <- renderUI({
-    if (is.null(kalauhaihai_clicked_sensor())) return(h3(""))
-    withSpinner(plotlyOutput("kalauhaihai_temperature_plot"))
-  })
-  
-  observe({
-    sensor_name <- kalauhaihai_clicked_sensor()
-    if (!is.null(sensor_name)) {
-      output$kalauhaihai_temperature_plot <- renderPlotly({
-        sensor_data_combined <- data %>%
-          filter(site == "Kalauhaihai", variable == "temperature", !site_specific %in% c("general", "Auwai", "Coconut")) %>%
-          mutate(value = if (input$temp_unit_kalauhaihai) value * 9/5 + 32 else value) %>%
-          mutate(order = ifelse(site_specific == sensor_name, 2, 1)) %>%
-          arrange(order, date_time_hst)
-        
-        line_plot <- ggplot(sensor_data_combined) +
-          geom_line(
-            data = sensor_data_combined %>% filter(site_specific != sensor_name),
-            aes(x = date_time_hst, y = value, group = site_specific),
-            color = "grey", size = 0.4, alpha = 0.3
-          ) +
-          geom_line(
-            data = sensor_data_combined %>% filter(site_specific == sensor_name),
-            aes(x = date_time_hst, y = value, color = site_specific),
-            size = 0.8, alpha = 0.5
-          ) +
-          scale_color_manual(values = c("Garage" = "#1E3A8A", "Makaha" = "#B91C1C")) +
-          labs(
-            title = paste("Kalauhaʻihaʻi Temperature:", sensor_name),
-            x = "Date and Time",
-            y = if (input$temp_unit_kalauhaihai) "Temperature (°F)" else "Temperature (°C)"
-          ) +
-          theme_minimal()
-        
-        ggplotly(line_plot) %>%
-          layout(hovermode = "x unified") %>%
-          config(displaylogo = FALSE, modeBarButtonsToAdd = c("hovercompare","toggleSpikelines","toImage"))
-      })
-    }
-  })
-  
-  output$kalauhaihai_pH <- renderPlotly({
-    df <- data %>%
-      filter(variable == "pH", site == "Kalauhaihai")
-    
-    x_max <- min(df$date_time_hst, na.rm = TRUE)
-    x_range <- diff(range(df$date_time_hst, na.rm = TRUE))
-    
-    x_ann <- x_max + (0.1 * x_range) 
-    p <- ggplot(
-      data %>% filter(variable == "pH", site == "Kalauhaihai"),
-      aes(x = date_time_hst, y = value)
-    ) +
-      geom_line(size = 0.5, color = "tomato4") +
-      labs(title = "Kalauhaʻihaʻi pH", x = "Date and Time", y = "pH Level") +
-      geom_hline(yintercept = 7, linetype = "dashed", color = "blue") +
-      annotate(
-        "text",
-        x = x_ann,
-        y = 7 - 0.2,            # nudged above the line
-        label = "pH level of freshwater",
-        hjust = 1,
-        color = "gray20"
-      ) +
-      theme_minimal()
-    
-    ggplotly(p) %>%
-      layout(hovermode = "x unified") %>%
-      config(displaylogo = FALSE, modeBarButtonsToAdd = c("hovercompare","toggleSpikelines","toImage"))
-  })
-  
-  output$kalauhaihai_oxygen <- renderPlotly({
-    df <- data %>%
-      filter(variable == "oxygen", site == "Kalauhaihai")
-    
-    x_max <- min(df$date_time_hst, na.rm = TRUE)
-    x_range <- diff(range(df$date_time_hst, na.rm = TRUE))
-    
-    x_ann <- x_max + (0.29 * x_range)  
-    p <- ggplot(
-      data %>% filter(variable == "oxygen", site == "Kalauhaihai"),
-      aes(x = date_time_hst, y = value)
-    ) +
-      geom_line(size = 0.5, color = "#0B5D73") +
-      labs(title = "Kalauhaʻihaʻi Oxygen", x = "Date and Time", y = "Oxygen (mg/L)") +
-      geom_hline(yintercept = 5, linetype = "dashed", color = "darkgreen") +
-      annotate(
-        "text",
-        x = x_ann,
-        y = 4 + 0.1,            # nudged above the line
-        label = "above 5 mg/L is generally conisdered healthy",
-        hjust = 1,
-        color = "gray20"
-      ) +
-      geom_hline(yintercept = 2, color = "darkred") +
-      annotate(
-        "text",
-        x = x_ann,
-        y = 1.5 + 0.1,            # nudged above the line
-        label = "below 2 mg/L is considered hypoxic (NOAA)",
-        hjust = 1,
-        color = "gray20"
-      ) +
-      theme_minimal()
-    
-    ggplotly(p) %>%
-      layout(hovermode = "x unified") %>%
-      config(displaylogo = FALSE, modeBarButtonsToAdd = c("hovercompare","toggleSpikelines","toImage"))
-  })
-  
-  # --- Maplibre overview ------------------------------------------------------
+  # --- Overview map: satellite imagery with a fly-in to both sites ---
   output$hawaii_map <- renderMaplibre({
     maplibre(
       style  = carto_style("positron-no-labels"),
@@ -667,8 +543,8 @@ server <- function(input, output, session) {
       zoom   = 7
     ) |>
       add_raster_source(
-        id    = "esri_imagery",
-        tiles = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        id       = "esri_imagery",
+        tiles    = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         tileSize = 256,
         maxzoom  = 19
       ) |>
@@ -679,115 +555,58 @@ server <- function(input, output, session) {
       )
   })
   
-  
-  # Add this reactive value at the top of your server function
-  animation_running <- reactiveVal(FALSE)
-  
+  # Runs once, when the map first reports its position.
   observeEvent(input$hawaii_map_center, {
-    # Only run if not already animating
-    if (animation_running()) return()
-    
-    animation_running(TRUE)  # Set flag
-    sess <- session
-    
-    # First: Fly to Kalauhaihai
-    maplibre_proxy("hawaii_map") |> 
+    # Fly to Kalauhaʻihaʻi (30 s) ...
+    maplibre_proxy("hawaii_map", session = session) |>
       fly_to(
-        center = c(-157.7319623, 21.2822266), 
-        zoom = 19.66, 
-        pitch = 172, 
-        bearing = 179.9, 
-        duration = 30000
+        center = c(-157.7319623, 21.2822266),
+        zoom = 19.66, pitch = 60, bearing = 179.9, duration = 30000
       )
-    
-    # Second: After first flight completes, fly to Kanewai
+    # ... then on to Kānewai (10 s)
     later::later(function() {
-      maplibre_proxy("hawaii_map", session = sess) |> 
+      maplibre_proxy("hawaii_map", session = session) |>
         fly_to(
           center = c(-157.72686729221283, 21.2842080160462),
-          zoom = 18,
-          pitch = 172, 
-          bearing = 179.9,
-          duration = 10000
+          zoom = 18, pitch = 60, bearing = 179.9, duration = 10000
         )
-      
-      # Reset flag after both animations complete
-      later::later(function() {
-        animation_running(FALSE)
-      }, delay = 6)
-    }, delay = 31)  # Wait for first animation to complete (30s + 1s buffer)
-  }, ignoreInit = TRUE, ignoreNULL = TRUE, once = TRUE)  # Add once = TRUE
+    }, delay = 31)
+  }, ignoreInit = TRUE, once = TRUE)
   
-  
-  # --- Chatbot ---------------------------------------------------------------
-  append_output <- function(...) {
-    txt <- paste0(...)
-    shinychat::chat_append_message(
-      "chat",
-      list(role = "assistant", content = txt),
-      chunk = TRUE,
-      operation = "append",
-      session = session
-    )
-  }
-  
-  update_dashboard <- function(query, title) {
-    append_output("\n
-sql\n", query, "\n
-\n\n")
-    tryCatch(
-      { dbGetQuery(conn, query) },
-      error = function(err) {
-        append_output("> Error: ", conditionMessage(err), "\n\n")
-        stop(err)
-      }
-    )
-    if (!is.null(query)) current_query(query)
-    if (!is.null(title)) current_title(title)
-  }
-  
-  query <- function(query) {
-    append_output("\n```sql\n", query, "\n```\n\n")
-    df <- tryCatch(dbGetQuery(conn, query),
-                   error = function(e) { append_output("> Error: ", conditionMessage(e), "\n\n"); stop(e) })
-    tbl_html <- df_to_html(df, maxrows = 5)
-    append_output(tbl_html, "\n\n")
-    df |> jsonlite::toJSON(auto_unbox = TRUE)
-  }
-  
-  chat <- chat_openai(model = openai_model, system_prompt = system_prompt_str)
-  chat$register_tool(tool(
-    update_dashboard,
-    "Modifies the data presented in the data dashboard, based on the given SQL query, and also updates the title.",
-    query = type_string("A DuckDB SQL query; must be a SELECT statement."),
-    title = type_string("A title to display at the top of the data dashboard, summarizing the intent of the SQL query.")
-  ))
-  chat$register_tool(tool(
-    query,
-    "Perform a SQL query on the data, and return the results as JSON.",
-    query = type_string("A DuckDB SQL query; must be a SELECT statement.")
-  ))
-  
-  chat_append("chat", greeting)
+  # --- Chatbot (one client per visitor session) ---
+  chat <- tryCatch(
+    {
+      client <- chat_openai(model = openai_model, system_prompt = system_prompt_str)
+      client$register_tool(tool(
+        run_query,
+        name = "query",
+        description = paste(
+          "Run a read-only DuckDB SELECT statement on the sensor_data table",
+          "and return the results as JSON. Returns at most", chat_max_rows, "rows."
+        ),
+        arguments = list(
+          query = type_string("A DuckDB SQL query; must be a SELECT statement.")
+        )
+      ))
+      client
+    },
+    error = function(e) {
+      message("Chat client could not be created: ", conditionMessage(e))
+      NULL
+    }
+  )
   
   observeEvent(input$chat_user_input, {
-    chat_append("chat", chat$stream_async(input$chat_user_input)) %...>% { }
+    if (is.null(chat)) {
+      chat_append("chat", "The AI assistant is unavailable right now (no API key is configured).")
+      return()
+    }
+    # Depending on the shinychat version this is a string or a list; handle both.
+    msg <- input$chat_user_input
+    if (is.list(msg)) msg <- unlist(msg, use.names = FALSE)[[1]]
+    # stream = "content" lets shinychat display the SQL tool calls and results.
+    chat_append("chat", chat$stream_async(as.character(msg), stream = "content"))
   })
-}
-
-df_to_html <- function(df, maxrows = 5) {
-  df_short <- if (nrow(df) > 10) head(df, maxrows) else df
-  tbl_html <- capture.output(
-    df_short |>
-      xtable::xtable() |>
-      print(type = "html", include.rownames = FALSE, html.table.attributes = NULL)
-  ) |> paste(collapse = "\n")
-  if (nrow(df_short) != nrow(df)) {
-    rows_notice <- glue::glue("\n\n(Showing only the first {maxrows} rows out of {nrow(df)}.)\n")
-  } else {
-    rows_notice <- ""
-  }
-  paste0(tbl_html, "\n", rows_notice)
 }
 
 shinyApp(ui, server)
