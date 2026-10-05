@@ -1,0 +1,83 @@
+---
+title: "tide_models"
+author: "Brandon Koskie"
+date: "2026-10-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(lubridate)
+library(broom)
+library(tidyr)
+library(purrr)
+library(readr)
+library(here)
+
+# -------------------------------------------------
+# 1. Load & join data
+# -------------------------------------------------
+sensor_data <- read_csv(here("cleaned_data/master_data_pivot.csv"), show_col_types = FALSE)
+
+combined <- sensor_data %>%
+  filter(site == "Kalauhaihai", variable %in% c("pH", "oxygen")) %>%
+  left_join(
+    tide_data %>% rename(tide_m = water_level_m),
+    by = "date_time_hst"
+  ) %>%
+  filter(!is.na(tide_m), !is.na(value)) %>%
+  mutate(
+    hour = hour(date_time_hst),
+    is_day = hour >= 6 & hour < 18
+  )
+
+# -------------------------------------------------
+# 2. Build clean scorecard
+# -------------------------------------------------
+scorecard <- combined %>%
+  group_by(variable) %>%
+  summarise(
+    overall_cor = cor(value, tide_m, use = "complete.obs"),
+    
+    # Linear model
+    model = list(lm(value ~ tide_m, data = cur_data())),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # Extract coefficient for tide
+    tide_effect = map_dbl(model, ~ coef(.x)["tide_m"]),
+    conf_low    = map_dbl(model, ~ confint(.x)["tide_m", 1]),
+    conf_high   = map_dbl(model, ~ confint(.x)["tide_m", 2]),
+    
+    # Extract R² and p-value
+    r_squared   = map_dbl(model, ~ summary(.x)$r.squared),
+    p_value     = map_dbl(model, ~ summary(.x)$coefficients["tide_m", "Pr(>|t|)"])
+  ) %>%
+  select(variable, overall_cor, tide_effect, conf_low, conf_high, r_squared, p_value)
+
+# -------------------------------------------------
+# 3. Day vs Night correlations
+# -------------------------------------------------
+day_night <- combined %>%
+  group_by(variable, is_day) %>%
+  summarise(
+    correlation = cor(value, tide_m, use = "complete.obs"),
+    .groups = "drop"
+  ) %>%
+  mutate(period = ifelse(is_day, "Day", "Night")) %>%
+  select(variable, period, correlation) %>%
+  pivot_wider(names_from = period, values_from = correlation)
+
+# -------------------------------------------------
+# 4. Final easy-to-read table
+# -------------------------------------------------
+kalauhaihai_final_scorecard <- scorecard %>%
+  left_join(day_night, by = "variable") %>%
+  mutate(
+    across(c(overall_cor, tide_effect, conf_low, conf_high, r_squared, Day, Night),
+           ~ round(.x, 3)),
+    p_value = signif(p_value, 3)
+  )
+
+print(final_scorecard)
+```
