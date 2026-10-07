@@ -392,7 +392,12 @@ data_temp_febapr2025_kanewairockstairsbywall_21445020 <- data_temp_febapr2025_ka
 
 data_temp_febapr2025_kanewaispringledgemaukaend_20970123 <- data_temp_febapr2025_kanewaispringledgemaukaend_20970123 %>% 
   filter(date_time_hst >= ymd_hms("2025-02-06 10:38:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-04-03 10:46:00", tz = "Pacific/Honolulu"))
+
+data_temp_apr2025jan2026_kanewaiauwaiunderfootbridge_20970102 <- data_temp_apr2025jan2026_kanewaiauwaiunderfootbridge_20970102 %>% 
+  filter(date_time_hst >= ymd_hms("2025-04-03 10:36:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-01-29 16:20:00", tz = "Pacific/Honolulu"))
 ```
+
+
 
 #Join Data This last section joins the data. One again manual input is
 needed. Add the new files separating by columns and new lines.
@@ -467,7 +472,8 @@ data_temp_octnov2023_kanewaispringledge_21445019,
 data_temp_febapr2025_kanewaifishpondedgenorfolk_20970107,
 data_temp_febapr2025_kanewaispringledgemaukaend_20970123,
 data_temp_febapr2025_kanewairockstairsbywall_21445020,
-data_temp_febapr2025_kanewaiauwaiunderfootbridge_20970093
+data_temp_febapr2025_kanewaiauwaiunderfootbridge_20970093,
+data_temp_apr2025jan2026_kanewaiauwaiunderfootbridge_20970102
 
 ) %>% 
   select(date_time_hst, temperature, site, site_specific)
