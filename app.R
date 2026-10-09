@@ -27,6 +27,8 @@ library(ellmer)
 library(shinychat)
 library(mapgl)
 library(later)
+library(lubridate)
+library(readr)
 
 # --- Settings -----------------------------------------------------------------
 openai_model   <- "gpt-4o"
@@ -65,6 +67,15 @@ snapshot <- function(site, ts_string) {
     GROUP BY site_specific
   ", params = list(site, ts_string))
 }
+
+# Load tide data
+tide_data <- readr::read_csv(
+  here("cleaned_data/honolulu_tide_10min.csv"),
+  show_col_types = FALSE
+) |>
+  mutate(
+    date_time_hst = force_tz(as.POSIXct(date_time_hst), tzone = "Pacific/Honolulu")
+  )
 
 # --- Site configuration -------------------------------------------------------
 # Everything that differs between the two sites lives here.
@@ -218,14 +229,26 @@ siteUI <- function(id, cfg) {
     ),
     div(
       class = "map-hint",
-      "👆 Click a sensor to see its temperature over time 📈.",
+      "👆 Click a sensor to see its temperature over time 📈. ",
       "⭐ indicates the pH and oxygen sensor."
     ),
-    withSpinner(plotOutput(ns("map"), click = ns("click"), height = cfg$map_height)),
-    plotHelpUI(paste("Explore", cfg$label, "Temperature, pH, and Oxygen")),
+    # ---- Map (left) + same-day graphs (right) ----
+    layout_columns(
+      col_widths = c(7, 5),
+      withSpinner(plotOutput(ns("map"), click = ns("click"), height = cfg$map_height)),
+      div(
+        h5("Selected day – sensor values"),
+        withSpinner(plotlyOutput(ns("day_temp"), height = "220px")),
+        withSpinner(plotlyOutput(ns("day_ph"), height = "180px")),
+        withSpinner(plotlyOutput(ns("day_oxygen"), height = "180px")),
+        withSpinner(plotlyOutput(ns("day_tide"), height = "160px"))
+      )
+    ),
+    plotHelpUI(paste("Explore", cfg$label, "Temperature, pH, Oxygen, and Tide")),
     uiOutput(ns("temp_ui")),
     plotlyOutput(ns("ph")),
-    plotlyOutput(ns("oxygen"))
+    plotlyOutput(ns("oxygen")),
+    plotlyOutput(ns("tide"), height = "400px")   # full tide graph
   )
 }
 
@@ -236,11 +259,127 @@ siteServer <- function(id, cfg) {
     temp_unit <- reactive(if (isTRUE(input$fahrenheit)) "°F" else "°C")
     convert   <- function(x) if (isTRUE(input$fahrenheit)) c_to_f(x) else x
     
+    # Data for the selected calendar day only
+    day_data <- reactive({
+      req(input$date)
+      d <- as.Date(input$date)
+      site_series |>
+        filter(
+          as.Date(date_time_hst) == d
+        )
+    })
+    
+    # Same day temp plot
+    output$day_temp <- renderPlotly({
+      df <- day_data() |>
+        filter(
+          variable == "temperature",
+          site_specific != "General",
+          !site_specific %in% cfg$series_exclude
+        ) |>
+        mutate(value = convert(value))
+      
+      if (nrow(df) == 0) {
+        return(plotly_empty() |> layout(title = "No temperature data this day"))
+      }
+      
+      p <- ggplot(df, aes(x = date_time_hst, y = value, colour = site_specific)) +
+        geom_line(linewidth = 0.5) +
+        scale_colour_manual(values = cfg$colors, guide = "none") +
+        labs(title = "Temperature (selected day)", x = NULL, y = temp_unit()) +
+        theme_minimal(base_size = 11)
+      
+      finish_plotly(ggplotly(p))
+    })
+    
+    # Same day pH plot
+    output$day_ph <- renderPlotly({
+      df <- day_data() |> filter(variable == "pH")
+      
+      if (nrow(df) == 0) {
+        return(plotly_empty() |> layout(title = "No pH data this day"))
+      }
+      
+      p <- ggplot(df, aes(x = date_time_hst, y = value)) +
+        geom_line(colour = "tomato4", linewidth = 0.5) +
+        geom_hline(yintercept = 7, linetype = "dashed", colour = "blue") +
+        labs(title = "pH (selected day)", x = NULL, y = "pH") +
+        theme_minimal(base_size = 11)
+      
+      finish_plotly(ggplotly(p))
+    })
+    
+    # Same day oxygen plot
+    output$day_oxygen <- renderPlotly({
+      df <- day_data() |> filter(variable == "oxygen")
+      
+      if (nrow(df) == 0) {
+        return(plotly_empty() |> layout(title = "No oxygen data this day"))
+      }
+      
+      p <- ggplot(df, aes(x = date_time_hst, y = value)) +
+        geom_line(colour = "#0B5D73", linewidth = 0.5) +
+        geom_hline(yintercept = 5, linetype = "dashed", colour = "darkgreen") +
+        geom_hline(yintercept = 2, colour = "darkred") +
+        labs(title = "Oxygen (selected day)", x = NULL, y = "mg/L") +
+        theme_minimal(base_size = 11)
+      
+      finish_plotly(ggplotly(p))
+    })
+    
+    # Same day tide plot
+    output$day_tide <- renderPlotly({
+      req(input$date)
+      d <- as.Date(input$date)
+      
+      df <- tide_data |>
+        filter(as.Date(date_time_hst) == d)
+      
+      if (nrow(df) == 0) {
+        return(plotly_empty() |> layout(title = "No tide data this day"))
+      }
+      
+      p <- ggplot(df, aes(x = date_time_hst, y = water_level_m)) +
+        geom_line(colour = "#1B4F72", linewidth = 0.5) +
+        labs(
+          title = "Tide (selected day)",
+          x = NULL,
+          y = "m (MLLW)"
+        ) +
+        theme_minimal(base_size = 11)
+      
+      finish_plotly(ggplotly(p))
+    })
+    
+    output$tide <- renderPlotly({
+      # Match the overall date range of this site’s sensor data
+      sensor_range <- range(site_series$date_time_hst, na.rm = TRUE)
+      
+      df <- tide_data |>
+        filter(
+          date_time_hst >= sensor_range[1],
+          date_time_hst <= sensor_range[2]
+        )
+      
+      p <- ggplot(df, aes(x = date_time_hst, y = water_level_m)) +
+        geom_line(colour = "#1B4F72", linewidth = 0.35, alpha = 0.85) +
+        labs(
+          title = "Honolulu Tide (Station 1612340) – Water Level",
+          subtitle = "Relative to MLLW • 10-minute intervals",
+          x = "Date and Time (HST)",
+          y = "Water Level (m)"
+        ) +
+        theme_minimal()
+      
+      finish_plotly(ggplotly(p))
+    })
+    
     # Selected moment as a plain "YYYY-MM-DD HH:MM:SS" string (HST wall clock)
     selected_ts <- reactive({
       req(input$date, input$time)
       paste0(format(input$date, "%Y-%m-%d"), " ", input$time, ":00")
     })
+    
     
     # --- Pond map ---
     map_data <- reactive({

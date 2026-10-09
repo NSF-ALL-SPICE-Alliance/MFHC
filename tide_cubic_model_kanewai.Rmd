@@ -1,0 +1,127 @@
+---
+title: "tide_cubic_model_kanewai"
+author: "Brandon Koskie"
+date: "2026-10-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(lubridate)
+library(broom)
+library(tidyr)
+library(purrr)
+library(readr)
+library(here)
+library(ggplot2)
+```
+
+# prepare the joined data
+```{r}
+# Sensor data
+sensor_data <- read_csv(here("cleaned_data/master_data_pivot.csv"), show_col_types = FALSE)
+
+# Make sure tide_data is loaded (from earlier)
+# tide_data should already exist with date_time_hst and water_level_m
+
+combined <- sensor_data %>%
+  filter(site == "Kanewai", variable %in% c("pH", "oxygen", "temperature")) %>%
+  left_join(
+    tide_data %>% rename(tide_m = water_level_m),
+    by = "date_time_hst"
+  ) %>%
+  filter(!is.na(tide_m), !is.na(value)) %>%
+  mutate(
+    hour   = hour(date_time_hst),
+    is_day = hour >= 6 & hour < 18
+  )
+
+# Quick check
+glimpse(combined)
+table(combined$variable)
+```
+
+# compare linear vs cubic models +day/night
+```{r}
+# Helper to fit both models for one variable
+fit_models <- function(df) {
+  list(
+    linear = lm(value ~ tide_m, data = df),
+    cubic  = lm(value ~ poly(tide_m, 3, raw = TRUE), data = df),
+    linear_day = lm(value ~ tide_m * is_day, data = df),
+    cubic_day  = lm(value ~ poly(tide_m, 3, raw = TRUE) * is_day, data = df)
+  )
+}
+
+results <- combined %>%
+  group_by(variable) %>%
+  group_modify(~ {
+    models <- fit_models(.x)
+    
+    tibble(
+      model = names(models),
+      r_squared = map_dbl(models, ~ summary(.x)$r.squared),
+      adj_r_squared = map_dbl(models, ~ summary(.x)$adj.r.squared),
+      aic = map_dbl(models, AIC),
+      # p-value of the overall model
+      p_value = map_dbl(models, ~ {
+        f <- summary(.x)$fstatistic
+        if (is.null(f)) return(NA_real_)
+        pf(f[1], f[2], f[3], lower.tail = FALSE)
+      })
+    )
+  }) %>%
+  ungroup()
+
+# Easy-to-read table
+results %>%
+  mutate(
+    across(c(r_squared, adj_r_squared), ~ round(.x, 4)),
+    aic = round(aic, 1),
+    p_value = signif(p_value, 3)
+  ) %>%
+  arrange(variable, model) %>%
+  print(n = 50)
+```
+
+# day vs night correlations 
+```{r}
+day_night_cor <- combined %>%
+  group_by(variable, is_day) %>%
+  summarise(
+    correlation = cor(value, tide_m, use = "complete.obs"),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(period = ifelse(is_day, "Day", "Night")) %>%
+  select(variable, period, correlation, n) %>%
+  pivot_wider(names_from = period, values_from = c(correlation, n))
+
+print(day_night_cor)
+```
+
+# Visual check of linear vs cubic
+```{r}
+ggplot(combined, aes(x = tide_m, y = value)) +
+  geom_point(alpha = 0.05, size = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ x, colour = "blue", se = FALSE) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), colour = "red", se = FALSE) +
+  facet_wrap(~ variable, scales = "free_y") +
+  labs(
+    title = "Tide vs Sensor Values",
+    subtitle = "Blue = linear, Red = cubic",
+    x = "Tide height (m, MLLW)",
+    y = "Sensor value"
+  ) +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+
+
+
