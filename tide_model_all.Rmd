@@ -1,0 +1,149 @@
+---
+title: "tide_models"
+author: "Brandon Koskie"
+date: "2026-10-09"
+output: html_document
+---
+
+
+# ==============================================================================
+# Tide vs sensor models – Kānewai & Kalauhaihai
+# Linear / Quadratic / Cubic / Quartic  ±  Day/Night
+# ==============================================================================
+
+```{r}
+library(dplyr)
+library(lubridate)
+library(purrr)
+library(tidyr)
+library(readr)
+library(here)
+library(ggplot2)
+```
+
+
+```{r}
+# ---- 1. Load data ------------------------------------------------------------
+sensor_data <- read_csv(
+  here("cleaned_data/master_data_pivot.csv"),
+  show_col_types = FALSE
+)
+
+tide_data <- read_csv(
+  here("cleaned_data/honolulu_tide_10min.csv"),
+  show_col_types = FALSE
+) %>%
+  mutate(
+    date_time_hst = force_tz(as.POSIXct(date_time_hst), tzone = "Pacific/Honolulu")
+  )
+```
+
+
+```{r}
+# ---- 2. Join tide to sensors (both sites) ------------------------------------
+combined <- sensor_data %>%
+  filter(variable %in% c("pH", "oxygen", "temperature")) %>%
+  left_join(
+    tide_data %>% rename(tide_m = water_level_m),
+    by = "date_time_hst"
+  ) %>%
+  filter(!is.na(tide_m), !is.na(value)) %>%
+  mutate(
+    hour   = hour(date_time_hst),
+    is_day = hour >= 6 & hour < 18
+  )
+
+cat("Rows after join:\n")
+print(table(combined$site, combined$variable))
+```
+
+
+```{r}
+# ---- 3. Fit all models -------------------------------------------------------
+results <- combined %>%
+  group_by(site, variable) %>%
+  group_modify(~ {
+    df <- .x
+
+    models <- list(
+      linear        = lm(value ~ tide_m, data = df),
+      quadratic     = lm(value ~ poly(tide_m, 2, raw = TRUE), data = df),
+      cubic         = lm(value ~ poly(tide_m, 3, raw = TRUE), data = df),
+      quartic       = lm(value ~ poly(tide_m, 4, raw = TRUE), data = df),
+      linear_day    = lm(value ~ tide_m * is_day, data = df),
+      quadratic_day = lm(value ~ poly(tide_m, 2, raw = TRUE) * is_day, data = df),
+      cubic_day     = lm(value ~ poly(tide_m, 3, raw = TRUE) * is_day, data = df),
+      quartic_day   = lm(value ~ poly(tide_m, 4, raw = TRUE) * is_day, data = df)
+    )
+
+    tibble(
+      model         = names(models),
+      r_squared     = map_dbl(models, ~ summary(.x)$r.squared),
+      adj_r_squared = map_dbl(models, ~ summary(.x)$adj.r.squared),
+      aic           = map_dbl(models, AIC)
+    )
+  }) %>%
+  ungroup()
+```
+
+
+```{r}
+# ---- 4. Clean results table --------------------------------------------------
+results_clean <- results %>%
+  mutate(
+    across(c(r_squared, adj_r_squared), ~ round(.x, 4)),
+    aic = round(aic, 1)
+  ) %>%
+  arrange(site, variable, model)
+
+print(results_clean, n = 100)
+
+# ---- 5. Best model per site × variable (by AIC) ------------------------------
+best_models <- results_clean %>%
+  group_by(site, variable) %>%
+  slice_min(aic, n = 1) %>%
+  ungroup()
+
+cat("\n---------- Best model (lowest AIC) per site × variable ----------\n")
+print(best_models)
+```
+
+
+```{r}
+# ---- 6. Day vs Night correlations --------------------------------------------
+day_night_cor <- combined %>%
+  group_by(site, variable, is_day) %>%
+  summarise(
+    correlation = cor(value, tide_m, use = "complete.obs"),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(period = ifelse(is_day, "Day", "Night")) %>%
+  select(site, variable, period, correlation, n) %>%
+  pivot_wider(
+    names_from  = period,
+    values_from = c(correlation, n)
+  )
+
+cat("\n---------- Day vs Night correlations ----------\n")
+print(day_night_cor)
+```
+
+
+```{r}
+# ---- 7. vs cubic (tide only) -------------------------
+ggplot(combined, aes(x = tide_m, y = value)) +
+  geom_point(alpha = 0.03, size = 0.3) +
+  geom_smooth(method = "lm", formula = y ~ x,               colour = "blue", se = FALSE) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3),      colour = "red",  se = FALSE) +
+  facet_grid(site ~ variable, scales = "free_y") +
+  labs(
+    title = "Tide vs Sensor Values",
+    subtitle = "Blue = linear, Red = cubic",
+    x = "Tide height (m, MLLW)",
+    y = "Sensor value"
+  ) +
+  theme_minimal()
+```
+
+
