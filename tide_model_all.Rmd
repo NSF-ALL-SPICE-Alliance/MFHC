@@ -146,4 +146,62 @@ ggplot(combined, aes(x = tide_m, y = value)) +
   theme_minimal()
 ```
 
+#What the visual shows: Tide height alone has almost no relationship with oxygen, pH, or temperature at either site. All six panels show dense clouds of points with nearly flat fitted lines.
+
+#The two lines sit almost on top of each other in every panel. That matches the model results: moving from linear to cubic (or quartic) barely improves the fit. The extra curve is not needed.
+
+#These plots show tide only (no day/night term). That is why everything looks weak.The models only became useful once day vs night was included. Those plots would look different if colored or split by time of day.
+
+
+
+
+#The results across both fishponds. Tide height by itself explains very little variation in pH, oxygen, or temperature.
+
+#Allowing the relationship to differ between day and night substantially improves the models (especially for pH at Kānewai and oxygen at Kalauhaihai).
+
+#Quadratic, cubic, and quartic terms provide only marginal gains over a simple linear model that includes a day/night interaction.
+
+#Therefore the most useful and interpretable description is a linear tide effect that changes between day and night.
+
+
+#Example of what quartic_day means: “Fit a flexible 4th-degree curve between tide height and the sensor value, and let that curve be different for daytime hours versus nighttime hours.”
+
+
+
+
+# Day vs night visual
+
+```{r}
+ggplot(combined, aes(x = tide_m, y = value, colour = is_day)) +
+  geom_point(alpha = 0.01, size = 0.4) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.8) +
+  scale_colour_manual(
+    values = c("FALSE" = "#1B4F72", "TRUE" = "#E67E22"),
+    labels = c("FALSE" = "Night", "TRUE" = "Day"),
+    name = "Period"
+  ) +
+  facet_grid(site ~ variable, scales = "free_y") +
+  labs(
+    title = "Tide vs Sensor Values by Day / Night",
+    subtitle = "Blue = Night, Orange = Day  |  Lines are linear fits",
+    x = "Tide height (m, MLLW)",
+    y = "Sensor value"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top",
+    strip.text = element_text(face = "bold")
+  )
+
+```
+
+#When observations are separated into day and night, the two periods often have different average levels of pH, oxygen, and temperature. However, within each period the relationship with tide height remains weak. This confirms that the improvement in model fit from the day/night term comes mainly from the day–night offset, not from a strong tidal slope.
+
+
+
+
+
+
+
+
 
