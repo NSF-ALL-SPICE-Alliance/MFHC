@@ -1,6 +1,7 @@
 # Welcome to the Kalauhaʻihaʻi and Kānewai Water Monitoring Dashboard!
 
-<img width="431" height="200" alt="image" src="https://github.com/user-attachments/assets/91037040-4112-49db-96a8-06ca90ba2771" />
+<img width="287" height="152" alt="image" src="https://github.com/user-attachments/assets/c0213a90-9ad0-478f-8900-018e5c8e43e4" />
+
 
 
 
