@@ -1,6 +1,7 @@
-# Welcome to the Maunalua Analytics for Stewardship and Tracking (MAST) Repository!
+# Welcome to the Kalauhaʻihaʻi and Kānewai Water Monitoring Dashboard!
 
-![MAST](https://github.com/user-attachments/assets/118080b7-4e40-4109-858a-43452b18286e)
+<img width="431" height="200" alt="image" src="https://github.com/user-attachments/assets/91037040-4112-49db-96a8-06ca90ba2771" />
+
 
 
 <img src="https://github.com/NSF-ALL-SPICE-Alliance/MFHC/assets/76076246/79951e4f-d012-47aa-b917-e1aea2179957" alt="SpiceLogo1" width="200" height="75">
@@ -12,28 +13,26 @@
 
 
 
-
-https://github.com/user-attachments/assets/ae21a8a5-0164-4902-b299-3c96ec0170e6
-
-
-
-
-
-## 🌺 Project Overview
+## 🌐 Project Overview
 
 This project is a collaboration between **Chris Cramer**, founder and Executive Director of the [Maunalua Fishpond Heritage Center](https://maunaluafishpond.org/), and **Dr. Lupita Ruiz Jones**, [Assistant Professor of Environmental Science at Chaminade University](https://lupita-ruiz-jones.squarespace.com/).
 
-### 👩🏽‍🔬 Student Researchers
+### Student Researchers
 
 Under the mentorship of Dr. Lupita Ruiz Jones and supported by the [Louis Stokes Alliances for Minority Participation (LSAMP)](https://www.nsf.gov/funding/opportunities/lsamp-louis-stokes-alliances-minority-participation):
 
-- Hina Ioane  
-- Kate Dugger
+- [Hina Ioane](https://www.linkedin.com/in/hina-ioane-707b83328/?isSelfProfile=false) 
+- [Kate Dugger](https://www.linkedin.com/in/katherine-dugger-66232a327/?isSelfProfile=false)
 
 Under the mentorship of [Connor Flynn](https://connorflynn.github.io/) and supported by the [NSF INCLUDES Alliance Supporting Pacific Impact through Computational Excellence (All-SPICE)](https://www.nsfspicealliance.org/):
 
-- Anson Ekau  
-- Brandon Koskie
+- [Anson Ekau](https://github.com/aekau21)
+- [Brandon Koskie](https://github.com/BrandonKoskie)
+
+Under the mentorship of [Connor Flynn](https://connorflynn.github.io/) and [Victoria Delacruz](https://github.com/vdlcruz670) and supported by the [NSF Strengthening the Cyberinfrastructure Professionals Ecosystem (SCIPE) program](https://cipacific.org/) as well as [NSF EPSCoR Hawaii](https://hawaii.edu/epscor/):
+
+- [Brandon Koskie](https://github.com/BrandonKoskie)
+- [Amara Brown](https://github.com/amara-brown)
 
 All data and code is publicly available via the project’s [GitHub repository](https://github.com/NSF-ALL-SPICE-Alliance/MFHC).
 
@@ -60,36 +59,3 @@ All data and code is publicly available via the project’s [GitHub repository](
 
 
 
-### 🌊 Adding New Data Update
-
-Follow these steps to upload new data to the dashboard and keep everything flowing smoothly. 🐟💧
-
-1. Download New Data 📥
-
-Download the latest data files and drag them into the raw_data folder.
-
-2. Update the For Loop 🔄
-
-Add the code to the [trimming section of the for_loop_temperature.Rmd](https://github.com/NSF-ALL-SPICE-Alliance/MFHC/blob/7a64ecf53d1c734bceba0186795d9604cfadaf45/for_loop_cleaning_scripts/for_loop_temperature.Rmd#L124C2-L124C10) file.
-
-Next, add the code to the [join data section of the for_loop_temperature.Rmd](https://github.com/NSF-ALL-SPICE-Alliance/MFHC/blob/7a64ecf53d1c734bceba0186795d9604cfadaf45/for_loop_cleaning_scripts/for_loop_temperature.Rmd#L301) file.
-
-3. Run the Code 🚀
-
-Run all the code in for_loop_temperature.Rmd.
-
-This will generate a new CSV called temp_joined in the cleaned_data folder.
-
-4. Commit & Push 💾➡️🌐
-
-Commit the new temp_joined file and the updated raw_data to GitHub.
-
-5. Generate the Master Data 📊
-
-Run the joining_data.Rmd to generate master_datapivot.csv in the cleaned_data folder.
-
-Push the new master_datapivot.csv to GitHub.
-
-6. Update the Dashboard 📈✨
-
-Now, users can pull the latest changes and run shiny_script.R to see the updated data on the dashboard! 🎉
