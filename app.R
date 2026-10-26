@@ -237,7 +237,7 @@ siteUI <- function(id, cfg) {
       col_widths = c(7, 5),
       withSpinner(plotOutput(ns("map"), click = ns("click"), height = cfg$map_height)),
       div(
-        h5("Selected day – sensor values"),
+        uiOutput(ns("selected_day_title")),
         withSpinner(plotlyOutput(ns("day_temp"), height = "220px")),
         withSpinner(plotlyOutput(ns("day_ph"), height = "180px")),
         withSpinner(plotlyOutput(ns("day_oxygen"), height = "180px")),
@@ -259,6 +259,19 @@ siteServer <- function(id, cfg) {
     temp_unit <- reactive(if (isTRUE(input$fahrenheit)) "°F" else "°C")
     convert   <- function(x) if (isTRUE(input$fahrenheit)) c_to_f(x) else x
     
+    # Heading above the daily graphs
+    output$selected_day_title <- renderUI({
+      req(input$date)
+      
+      h5(
+        paste(
+          "Sensor values for",
+          format(as.Date(input$date), "%B %d, %Y")
+        ),
+        class = "mb-2"
+      )
+    })
+
     # Data for the selected calendar day only
     day_data <- reactive({
       req(input$date)
@@ -286,7 +299,7 @@ siteServer <- function(id, cfg) {
       p <- ggplot(df, aes(x = date_time_hst, y = value, colour = site_specific)) +
         geom_line(linewidth = 0.5) +
         scale_colour_manual(values = cfg$colors, guide = "none") +
-        labs(title = "Temperature (selected day)", x = NULL, y = temp_unit()) +
+        labs(title = "Temperature", x = NULL, y = temp_unit()) +
         theme_minimal(base_size = 11)
       
       finish_plotly(ggplotly(p))
@@ -303,7 +316,7 @@ siteServer <- function(id, cfg) {
       p <- ggplot(df, aes(x = date_time_hst, y = value)) +
         geom_line(colour = "tomato4", linewidth = 0.5) +
         geom_hline(yintercept = 7, linetype = "dashed", colour = "blue") +
-        labs(title = "pH (selected day)", x = NULL, y = "pH") +
+        labs(title = "pH", x = NULL, y = "pH") +
         theme_minimal(base_size = 11)
       
       finish_plotly(ggplotly(p))
@@ -321,7 +334,7 @@ siteServer <- function(id, cfg) {
         geom_line(colour = "#0B5D73", linewidth = 0.5) +
         geom_hline(yintercept = 5, linetype = "dashed", colour = "darkgreen") +
         geom_hline(yintercept = 2, colour = "darkred") +
-        labs(title = "Oxygen (selected day)", x = NULL, y = "mg/L") +
+        labs(title = "Oxygen", x = NULL, y = "mg/L") +
         theme_minimal(base_size = 11)
       
       finish_plotly(ggplotly(p))
@@ -340,9 +353,12 @@ siteServer <- function(id, cfg) {
       }
       
       p <- ggplot(df, aes(x = date_time_hst, y = water_level_m)) +
-        geom_line(colour = "#1B4F72", linewidth = 0.5) +
+        geom_area(
+          fill = "#191970",
+          alpha = 1.0
+        ) +
         labs(
-          title = "Tide (selected day)",
+          title = "Tide",
           x = NULL,
           y = "m (MLLW)"
         ) +

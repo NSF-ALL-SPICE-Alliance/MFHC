@@ -79,5 +79,5 @@ kanewai_final_scorecard <- scorecard %>%
     p_value = signif(p_value, 3)
   )
 
-print(final_scorecard)
+print(kanewai_final_scorecard)
 ```
