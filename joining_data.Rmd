@@ -50,15 +50,15 @@ all_data_pivot %>%
 ```
 
 ```{r}
-#write a for loop checking for n/a in site_specific column and replacing them with the character "test". the data set is called all_data_pivot
+# Replace missing site_specific with "General" (pH/oxygen often have no location tag)
+all_data_pivot_dupe <- all_data_pivot_dupe %>%
+  mutate(
+    site_specific = if_else(is.na(site_specific), "General", as.character(site_specific))
+  )
 
-# Assuming all_data_pivot is your data frame
-for (i in 1:nrow(all_data_pivot_dupe)) {
-  if (is.na(all_data_pivot_dupe[i, "site_specific"])) {
-    all_data_pivot_dupe[i, "site_specific"] <- "General"
-  }
-}
-
+# Quick check
+sum(is.na(all_data_pivot_dupe$site_specific))  # should be 0
+table(all_data_pivot_dupe$site_specific, useNA = "ifany")
 
 ```
 
