@@ -237,12 +237,46 @@ data_ph_temp_aprjuly2025_kanewaispringrock_21433529 <-
 data_ph_temp_julyoct2025_kalauhaihaigarage_21952333 <-
   data_ph_temp_julyoct2025_kalauhaihaigarage_21952333 %>% 
   filter(date_time_hst >= ymd_hms("2025-07-31 10:20:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2025-10-10 09:25:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_oct2025jan2026_kalauhaihaigarage_21873460 <-
+  data_ph_temp_oct2025jan2026_kalauhaihaigarage_21873460 %>% 
+  filter(date_time_hst >= ymd_hms("2025-10-09 09:40:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-01-22 09:27:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_oct2025jan2026_kanewaispringrock_20839036 <-
+  data_ph_temp_oct2025jan2026_kanewaispringrock_20839036 %>% 
+  filter(date_time_hst >= ymd_hms("2025-10-28 18:19:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-01-22 10:31:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_febapr2026_kalauhaihaigarage_20839036 <-
+  data_ph_temp_febapr2026_kalauhaihaigarage_20839036 %>% 
+  filter(date_time_hst >= ymd_hms("2026-02-05 09:39:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-04-16 09:21:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_febapr2026_kanewaispringrock_21433529 <-
+  data_ph_temp_febapr2026_kanewaispringrock_21433529 %>% 
+  filter(date_time_hst >= ymd_hms("2026-02-05 10:46:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-04-16 10:37:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_aprjune2026_kalauhaihaigarage_21873460 <-
+  data_ph_temp_aprjune2026_kalauhaihaigarage_21873460 %>% 
+  filter(date_time_hst >= ymd_hms("2026-04-16 09:30:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-06-09 16:28:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_aprjune2026_kanewaispringrock_21952333 <-
+  data_ph_temp_aprjune2026_kanewaispringrock_21952333 %>% 
+  filter(date_time_hst >= ymd_hms("2026-04-16 09:30:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-06-09 17:20:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_junesept2026_kalauhaihaigarage_20839036 <-
+  data_ph_temp_junesept2026_kalauhaihaigarage_20839036 %>% 
+  filter(date_time_hst >= ymd_hms("2026-06-09 16:40:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-09-23 15:45:00", tz = "Pacific/Honolulu"))
+
+data_ph_temp_junesept2026_kanewaispringrock_21433529 <-
+  data_ph_temp_junesept2026_kanewaispringrock_21433529 %>% 
+  filter(date_time_hst >= ymd_hms("2026-06-09 17:35:00", tz = "Pacific/Honolulu") & date_time_hst <= ymd_hms("2026-09-23 16:45:00", tz = "Pacific/Honolulu"))
 ```
 
 #Join Data
 This last section joins the data. One again manual input is needed. Add the new files separating by columns and new lines. 
 ```{r}
-pH_joined <- bind_rows(data_ph_julysept2023_kalauhaihai_21433529,
+# List every trimmed data frame
+ph_list <- list(
+  data_ph_julysept2023_kalauhaihai_21433529,
   data_ph_apr2022_kalauhaihai_20839036,
   data_ph_febapr2023_kanewaispringrock_21433529,
   data_ph_febapr2023_kalauhaihai_20839036,
@@ -261,9 +295,36 @@ pH_joined <- bind_rows(data_ph_julysept2023_kalauhaihai_21433529,
   data_ph_temp_febapr2025_kanewaispringrock_21433529,
   data_ph_temp_aprjuly2025_kalauhaihaigarage_21873460,
   data_ph_temp_aprjuly2025_kanewaispringrock_21433529,
-  data_ph_temp_julyoct2025_kalauhaihaigarage_21952333
-  ) %>% 
-  select(date_time_hst, pH, site)
+  data_ph_temp_julyoct2025_kalauhaihaigarage_21952333,
+  data_ph_temp_oct2025jan2026_kalauhaihaigarage_21873460,
+  data_ph_temp_oct2025jan2026_kanewaispringrock_20839036,
+  data_ph_temp_febapr2026_kalauhaihaigarage_20839036,
+  data_ph_temp_febapr2026_kanewaispringrock_21433529,
+  data_ph_temp_aprjune2026_kalauhaihaigarage_21873460,
+  data_ph_temp_aprjune2026_kanewaispringrock_21952333,
+  data_ph_temp_junesept2026_kalauhaihaigarage_20839036,
+  data_ph_temp_junesept2026_kanewaispringrock_21433529
+)
+
+# Keep only the columns we need, then bind
+pH_joined <- ph_list %>%
+  map(~ {
+    df <- .x
+    # Ensure expected columns exist
+    if (!"site" %in% names(df)) df$site <- NA_character_
+    if (!"pH" %in% names(df)) {
+      # fallback if pH was named differently after clean_names
+      ph_col <- grep("p_?h|ph", names(df), ignore.case = TRUE, value = TRUE)[1]
+      if (!is.na(ph_col)) names(df)[names(df) == ph_col] <- "pH"
+    }
+    df %>%
+      select(any_of(c("date_time_hst", "pH", "site")))
+  }) %>%
+  bind_rows()
+
+# Quick check
+glimpse(pH_joined)
+table(pH_joined$site)
 ```
 
 #Write CSV

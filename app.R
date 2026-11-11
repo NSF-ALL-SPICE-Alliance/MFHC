@@ -610,7 +610,7 @@ overview_html <- HTML('
 
     <h4><strong>Participants</strong></h4>
     <ul>
-      <li><a href="https://lupita-ruiz-jones.squarespace.com/" target="_blank">Lupita Ruiz-Jones PhD</a>, Associate Professor of Environmental Science at Chaminade University</li>
+      <li>Lupita Ruiz-Jones PhD, Associate Professor of Environmental Science at Chaminade University</li>
       <li><a href="https://connorflynn.github.io/" target="_blank">Connor Flynn MS</a>, Data Scientist</li>
       <li>Hina Ioane, Environmental Science recent graduate</li>
       <li>Kate Dugger, Environmental Studies recent graduate</li>
