@@ -7,6 +7,8 @@ library(tibble)
 library(here)
 library(readr)
 
+# This was done to automatically access the NOAA data and download it
+# rather than manually downloading each reading.
 get_noaa_water_level <- function(begin_date, end_date,
                                  station = "1612340",
                                  datum = "MLLW",
@@ -42,7 +44,10 @@ get_noaa_water_level <- function(begin_date, end_date,
   )
 }
 
-# Adjust the start date to match the earliest sensor data you care about
+# Define the research period for NOAA tide data.
+# Example: Data collection begins February 9, 2023 and ends October 24, 2025.
+# Split the retrieval period into approximately monthly requests
+# to avoid requesting the entire dataset in one API call.
 starts <- seq(as.Date("2023-02-09"), as.Date("2025-10-05"), by = "month")
 ends   <- pmin(starts + months(1) - days(1), as.Date("2025-10-24"))
 
@@ -52,6 +57,8 @@ tide_raw <- map2_dfr(starts, ends, ~ {
 })
 
 # Aggregate to exact 10-minute grid
+# This is done to match the timestamps
+# the sensors make which is every 10 minutes.
 tide_10min <- tide_raw %>%
   mutate(date_time_hst = floor_date(date_time_hst, "10 minutes")) %>%
   group_by(date_time_hst) %>%

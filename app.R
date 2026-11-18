@@ -68,13 +68,19 @@ snapshot <- function(site, ts_string) {
   ", params = list(site, ts_string))
 }
 
-# Load tide data
+
+# Load the shared timestamp helper
+source(here("time_helper.R"))
+
+# Read and convert NOAA tide timestamps
 tide_data <- readr::read_csv(
-  here("cleaned_data/honolulu_tide_10min.csv"),
-  show_col_types = FALSE
-) |>
+  here("cleaned_data", "honolulu_tide_10min.csv"),
+  col_types = cols(
+    date_time_hst = col_character()
+  )
+) %>%
   mutate(
-    date_time_hst = force_tz(as.POSIXct(date_time_hst), tzone = "Pacific/Honolulu")
+    date_time_hst = utc_to_hst_wall_time(date_time_hst)
   )
 
 # --- Site configuration -------------------------------------------------------
@@ -271,7 +277,7 @@ siteServer <- function(id, cfg) {
         class = "mb-2"
       )
     })
-
+    
     # Data for the selected calendar day only
     day_data <- reactive({
       req(input$date)

@@ -38,7 +38,9 @@ tide_data <- read_csv(
   )
 ```
 
-
+# Tide measurements are joined to sensor observations using their
+# timestamps. This allows each water-quality measurement to be
+compared with the corresponding tide height at that time.
 ```{r}
 # ---- 2. Join tide to sensors (both sites) ------------------------------------
 combined <- sensor_data %>%
@@ -50,14 +52,19 @@ combined <- sensor_data %>%
   filter(!is.na(tide_m), !is.na(value)) %>%
   mutate(
     hour   = hour(date_time_hst),
-    is_day = hour >= 6 & hour < 18
+    is_day = hour >= 6 & hour < 18 #Daytime was defined as 6:00 AM through 6:00 PM, while nighttime included 6:00 PM through 6:00 AM. This fixed 12-hour                                        division provided a consistent way to compare sensor readings between day and night, although it does not account for                                       seasonal changes in sunrise and sunset.
   )
 
 cat("Rows after join:\n")
 print(table(combined$site, combined$variable))
 ```
-
-
+# Linear, quadratic, cubic, and quartic models are compared to
+determine whether the relationship between tide height and
+water quality is better described by a straight line or a 
+more complex curve.
+Additional models include day/night and tide-by-day/night
+interactions to investigate whether the relationship between
+tide and water quality differs depending on the time of day.
 ```{r}
 # ---- 3. Fit all models -------------------------------------------------------
 results <- combined %>%
@@ -86,7 +93,11 @@ results <- combined %>%
   ungroup()
 ```
 
-
+# Adjusted R-squared measures how much variation the model
+explains while accounting for the number of predictors.
+AIC compares model fit while penalizing unnecessary complexity.
+Lower AIC values indicate a better relative model fit among
+the models being compared.
 ```{r}
 # ---- 4. Clean results table --------------------------------------------------
 results_clean <- results %>%
@@ -108,7 +119,9 @@ cat("\n---------- Best model (lowest AIC) per site × variable ----------\n")
 print(best_models)
 ```
 
-
+# Correlations are calculated separately for daytime and
+nighttime observations to examine whether the direction
+and strength of the relationship with tide changes by period.
 ```{r}
 # ---- 6. Day vs Night correlations --------------------------------------------
 day_night_cor <- combined %>%
